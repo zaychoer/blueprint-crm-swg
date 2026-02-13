@@ -1,37 +1,4653 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Multi-Tenant CRM/PRM Blueprint</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Tenant CRM/PRM — Blueprint</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700;6..72,800&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ================================================================
+   GLOBAL: NAV + COVER + LAYOUT
+   ================================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #06080c;
+      --bg1: #0c1018;
+      --bg2: #121822;
+      --bg3: #182030;
+      --bg4: #1e2840;
+      --bdr: #1e2a3e;
+      --bdr2: #2a3a55;
+      --tx: #d8e0f0;
+      --tx2: #8894b0;
+      --tx3: #586480;
+      --ink: #f0f4ff;
+      --swg: #e8a825;
+      --swg-g: rgba(232, 168, 37, .06);
+      --swg-b: rgba(232, 168, 37, .2);
+      --p1: #e8a825;
+      --p2: #4890f8;
+      --p3: #e84860;
+      --p4: #a882f8;
+      --p5: #22c87a;
+      --p6: #e87830;
+      --grn: #22c87a;
+      --grn-g: rgba(34, 200, 122, .06);
+      --grn-b: rgba(34, 200, 122, .2);
+      --red: #e84858;
+      --red-g: rgba(232, 72, 88, .06);
+      --red-b: rgba(232, 72, 88, .2);
+      --blu: #4890f8;
+      --ylw: #e8b830;
+      --vio: #a882f8;
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--tx);
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased
+    }
+
+    /* TOP NAV */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: rgba(6, 8, 12, .92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid var(--bdr);
+    }
+
+    .topnav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      height: 52px;
+    }
+
+    .topnav-logo {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--swg);
+      margin-right: auto;
+      white-space: nowrap;
+    }
+
+    .topnav-tabs {
+      display: flex;
+      gap: 0;
+      height: 100%
+    }
+
+    .topnav-tab {
+      position: relative;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      color: var(--tx3);
+      padding: 0 20px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: color .2s;
+      border: none;
+      background: none;
+    }
+
+    .topnav-tab:hover {
+      color: var(--tx)
+    }
+
+    .topnav-tab.active {
+      color: var(--ink)
+    }
+
+    .topnav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1.5px;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      background: var(--swg);
+      border-radius: 2px;
+    }
+
+    .topnav-tab .tab-num {
+      font-size: 9px;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg3);
+      color: var(--tx3);
+    }
+
+    .topnav-tab.active .tab-num {
+      background: var(--swg-b);
+      color: var(--swg)
+    }
+
+    /* COVER */
+    .cover {
+      padding: 80px 32px 60px;
+      text-align: center;
+      border-bottom: 1px solid var(--bdr);
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232, 168, 37, .04), transparent);
+    }
+
+    .cover-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--swg);
+      margin-bottom: 14px
+    }
+
+    .cover h1 {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 14px
+    }
+
+    .cover h1 em {
+      font-style: italic;
+      color: var(--swg)
+    }
+
+    .cover-sub {
+      font-size: 14px;
+      color: var(--tx2);
+      max-width: 600px;
+      margin: 0 auto 28px
+    }
+
+    .cover-chips {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .cover-chip {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--bdr);
+      background: var(--bg2);
+      color: var(--tx2);
+    }
+
+    .cover-chip .cc-ico {
+      margin-right: 4px
+    }
+
+    /* SECTION WRAPPERS */
+    .doc-section {
+      display: none;
+      min-height: 80vh
+    }
+
+    .doc-section.active {
+      display: block
+    }
+
+    .doc-section>.w>.hero,
+    .doc-section .hero {
+      display: none !important;
+    }
+
+    .section-divider {
+      padding: 36px 32px 24px;
+      max-width: 1400px;
+      margin: 0 auto
+    }
+
+    .section-divider .sd-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--swg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .section-divider .sd-tag::before,
+    .section-divider .sd-tag::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--bdr);
+    }
+
+    .section-divider .sd-title {
+      font-family: 'Newsreader', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* SCROLL TO TOP */
+    .scroll-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9998;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      color: var(--tx2);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .3s, background .2s;
+      pointer-events: none;
+    }
+
+    .scroll-top.show {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .scroll-top:hover {
+      background: var(--bg3);
+      color: var(--ink)
+    }
+
+    @media(max-width:768px) {
+      .topnav-inner {
+        padding: 0 12px
+      }
+
+      .topnav-tab {
+        padding: 0 12px;
+        font-size: 10px
+      }
+
+      .topnav-logo {
+        font-size: 8px;
+        letter-spacing: 1px
+      }
+
+      .cover {
+        padding: 60px 16px 40px
+      }
+    }
+
+    /* ================================================================
+   SECTION 1: ARCHITECTURE STYLES
+   ================================================================ */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #08090d;
+      --bg1: #0e1018;
+      --bg2: #141822;
+      --bg3: #1a1f2e;
+      --bg4: #20263a;
+      --bdr: #252d42;
+      --bdr2: #334060;
+      --tx: #dfe4f0;
+      --tx2: #8892aa;
+      --tx3: #5a6478;
+      --ink: #f2f4fa;
+      --swg: #e8a825;
+      --swg-g: rgba(232, 168, 37, .07);
+      --swg-b: rgba(232, 168, 37, .22);
+      --xsys: #18b8d8;
+      --xsys-g: rgba(24, 184, 216, .07);
+      --xsys-b: rgba(24, 184, 216, .22);
+      --grc: #a882f8;
+      --grc-g: rgba(168, 130, 248, .07);
+      --grc-b: rgba(168, 130, 248, .22);
+      --grn: #22c87a;
+      --grn-g: rgba(34, 200, 122, .07);
+      --blu: #4890f8;
+      --red: #e84860;
+      --vio: #a882f8;
+      --ora: #e87830;
+      --p1: #e8a825;
+      --p2: #4890f8;
+      --p3: #e84860;
+      --p4: #a882f8;
+      --p5: #22c87a;
+      --p6: #e87830;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--tx);
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased
+    }
+
+    .w {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 32px
+    }
+
+    /* HERO */
+    .hero {
+      padding: 64px 0 48px;
+      text-align: center;
+      position: relative
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 20%, rgba(232, 168, 37, .05) 0%, transparent 55%);
+      pointer-events: none
+    }
+
+    .hero-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--swg);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px
+    }
+
+    .v-badge {
+      background: var(--swg);
+      color: var(--bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px
+    }
+
+    .hero h1 {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(28px, 4.5vw, 50px);
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.12;
+      margin-bottom: 10px
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--swg), #f0d080);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    .hero-sub {
+      font-size: 15.5px;
+      color: var(--tx2);
+      max-width: 680px;
+      margin: 0 auto
+    }
+
+    /* STATS ROW */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 32px 0 48px
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 18px 24px;
+      text-align: center;
+      min-width: 130px
+    }
+
+    .stat-card .sv {
+      font-family: 'Newsreader', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--sc, var(--ink))
+    }
+
+    .stat-card .sl {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-top: 2px
+    }
+
+    /* SECTIONS */
+    .sec {
+      padding: 40px 0
+    }
+
+    .sh {
+      margin-bottom: 24px
+    }
+
+    .sh h2 {
+      font-family: 'Newsreader', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .sh p {
+      font-size: 14px;
+      color: var(--tx2);
+      margin-top: 3px;
+      max-width: 620px
+    }
+
+    /* CORRECTION */
+    .corr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 40px
+    }
+
+    @media(max-width:768px) {
+      .corr {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .corr-c {
+      border-radius: 12px;
+      padding: 22px 24px;
+      border: 1px solid var(--bdr)
+    }
+
+    .corr-c.wrong {
+      background: rgba(232, 72, 96, .03);
+      border-color: rgba(232, 72, 96, .18)
+    }
+
+    .corr-c.right {
+      background: var(--grn-g);
+      border-color: rgba(34, 200, 122, .2)
+    }
+
+    .corr-c .cl {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .corr-c.wrong .cl {
+      color: var(--red)
+    }
+
+    .corr-c.right .cl {
+      color: var(--grn)
+    }
+
+    .corr-c p {
+      font-size: 13.5px;
+      color: var(--tx2);
+      line-height: 1.6
+    }
+
+    .corr-c strong {
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    /* HIERARCHY */
+    .hier {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      padding: 32px;
+      margin-bottom: 40px;
+      overflow-x: auto
+    }
+
+    .hier-inner {
+      min-width: 700px
+    }
+
+    .tier {
+      margin-bottom: 22px
+    }
+
+    .tier-l {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-bottom: 10px
+    }
+
+    .tier-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .tier-box {
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      padding: 14px 18px;
+      min-width: 155px;
+      transition: all .2s
+    }
+
+    .tier-box:hover {
+      border-color: var(--tb-c, var(--bdr2));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .2)
+    }
+
+    .tier-box.primary {
+      background: color-mix(in srgb, var(--tb-c, #888) 6%, var(--bg2));
+      border-color: color-mix(in srgb, var(--tb-c, #888) 30%, transparent)
+    }
+
+    .tier-box .tb-i {
+      font-size: 18px;
+      margin-bottom: 3px;
+      display: block
+    }
+
+    .tier-box .tb-n {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--tb-c, var(--ink))
+    }
+
+    .tier-box .tb-d {
+      font-size: 11px;
+      color: var(--tx3);
+      margin-top: 2px
+    }
+
+    .tier-box.sub {
+      background: var(--bg2);
+      opacity: .8
+    }
+
+    .tier-arr {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 0
+    }
+
+    .tier-arr span {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: var(--tx3);
+      padding: 3px 12px;
+      background: var(--bg);
+      border: 1px solid var(--bdr);
+      border-radius: 20px
+    }
+
+    /* PROBLEM / SOLUTION */
+    .ps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 40px
+    }
+
+    @media(max-width:768px) {
+      .ps-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .ps-card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 26px 28px
+    }
+
+    .ps-card.prob {
+      border-color: rgba(232, 72, 96, .15);
+      background: linear-gradient(135deg, rgba(232, 72, 96, .02), var(--bg2))
+    }
+
+    .ps-card.sol {
+      border-color: rgba(34, 200, 122, .15);
+      background: linear-gradient(135deg, rgba(34, 200, 122, .02), var(--bg2))
+    }
+
+    .ps-card .ps-icon {
+      font-size: 18px;
+      margin-bottom: 10px;
+      display: block
+    }
+
+    .ps-card h3 {
+      font-family: 'Newsreader', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px
+    }
+
+    .ps-card ul {
+      list-style: none;
+      padding: 0
+    }
+
+    .ps-card li {
+      padding: 5px 0 5px 18px;
+      position: relative;
+      font-size: 13px;
+      color: var(--tx2);
+      line-height: 1.5
+    }
+
+    .ps-card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%
+    }
+
+    .prob li::before {
+      background: var(--red)
+    }
+
+    .sol li::before {
+      background: var(--grn)
+    }
+
+    /* VENDOR MATRIX */
+    .matrix-w {
+      overflow-x: auto;
+      margin-bottom: 40px
+    }
+
+    .mtx {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12.5px;
+      min-width: 780px
+    }
+
+    .mtx th {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 11px 14px;
+      background: var(--bg2);
+      border-bottom: 2px solid var(--bdr);
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 2
+    }
+
+    .mtx th.cc {
+      text-align: center
+    }
+
+    .mtx th.swg-h {
+      color: var(--swg);
+      border-bottom-color: var(--swg)
+    }
+
+    .mtx th.xsys-h {
+      color: var(--xsys);
+      border-bottom-color: var(--xsys)
+    }
+
+    .mtx th.grc-h {
+      color: var(--grc);
+      border-bottom-color: var(--grc)
+    }
+
+    .mtx td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--bdr);
+      vertical-align: middle
+    }
+
+    .mtx tr:hover td {
+      background: var(--bg2)
+    }
+
+    .mtx td.nc {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: var(--tx3);
+      width: 36px;
+      text-align: center
+    }
+
+    .mtx td.vc {
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .rb {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap
+    }
+
+    .rb.dist {
+      background: rgba(34, 200, 122, .08);
+      color: var(--grn);
+      border: 1px solid rgba(34, 200, 122, .18)
+    }
+
+    .rb.part {
+      background: rgba(72, 144, 248, .08);
+      color: var(--blu);
+      border: 1px solid rgba(72, 144, 248, .18)
+    }
+
+    .rb.gold {
+      background: rgba(232, 168, 37, .08);
+      color: var(--swg);
+      border: 1px solid rgba(232, 168, 37, .18)
+    }
+
+    .empty-c {
+      color: var(--tx3);
+      font-size: 11px;
+      opacity: .35
+    }
+
+    /* DASHBOARD PREVIEW */
+    .dash {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 40px
+    }
+
+    .dash-nav {
+      display: flex;
+      border-bottom: 1px solid var(--bdr);
+      background: var(--bg2);
+      overflow-x: auto
+    }
+
+    .dash-tab {
+      padding: 14px 22px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--tx3);
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      white-space: nowrap;
+      transition: all .15s;
+      user-select: none
+    }
+
+    .dash-tab:hover {
+      color: var(--tx);
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .dash-tab.on {
+      color: var(--dt-c, var(--ink));
+      border-bottom-color: var(--dt-c, var(--ink));
+      font-weight: 600;
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .dash-body {
+      min-height: 320px
+    }
+
+    .d-panel {
+      display: none;
+      padding: 28px 32px
+    }
+
+    .d-panel.on {
+      display: block
+    }
+
+    .d-panel .dp-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .d-panel .dp-head h3 {
+      font-family: 'Newsreader', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .dp-role {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px
+    }
+
+    /* Principal sub-tabs */
+    .pr-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .pr-tab {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--bdr);
+      background: var(--bg2);
+      color: var(--tx2);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none
+    }
+
+    .pr-tab:hover {
+      border-color: var(--bdr2);
+      background: var(--bg3)
+    }
+
+    .pr-tab.on {
+      background: var(--bg4);
+      border-color: var(--bdr2);
+      color: var(--ink)
+    }
+
+    .pr-content {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px
+    }
+
+    .pr-content .pc-head {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .pr-content .pc-role {
+      font-size: 10px;
+      color: var(--tx3)
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 7px;
+      margin-top: 12px
+    }
+
+    .menu-i {
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .12s
+    }
+
+    .menu-i:hover {
+      border-color: var(--bdr2);
+      background: var(--bg4)
+    }
+
+    .menu-i .mi-i {
+      font-size: 13px
+    }
+
+    .menu-i .mi-l {
+      font-weight: 500;
+      color: var(--ink)
+    }
+
+    .menu-i.off {
+      opacity: .25
+    }
+
+    /* BUILD FLOW */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 40px
+    }
+
+    .flow-box {
+      background: var(--bg2);
+      border: 1.5px solid var(--bdr);
+      border-radius: 12px;
+      padding: 18px 26px;
+      text-align: center;
+      max-width: 520px;
+      width: 100%;
+      transition: all .2s
+    }
+
+    .flow-box:hover {
+      border-color: var(--fb-c, var(--bdr2));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .15)
+    }
+
+    .flow-box .fb-p {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--fb-c, var(--tx3));
+      margin-bottom: 3px
+    }
+
+    .flow-box .fb-t {
+      font-family: 'Newsreader', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 3px
+    }
+
+    .flow-box .fb-d {
+      font-size: 12px;
+      color: var(--tx2)
+    }
+
+    .flow-arr {
+      font-size: 16px;
+      color: var(--tx3)
+    }
+
+    .flow-fork {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 960px
+    }
+
+    @media(max-width:768px) {
+      .flow-fork {
+        flex-direction: column
+      }
+    }
+
+    .flow-fork .flow-box {
+      flex: 1
+    }
+
+    .flow-lbl {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      padding: 3px 12px;
+      background: var(--bg1);
+      border: 1px solid var(--bdr);
+      border-radius: 20px
+    }
+
+    /* SCENARIOS */
+    .sc-card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 14px
+    }
+
+    .sc-card .sc-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .sc-card .sc-head .sc-i {
+      font-size: 20px
+    }
+
+    .sc-card .sc-head h4 {
+      font-family: 'Newsreader', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .sc-card .sc-head .sc-ctx {
+      font-size: 11px;
+      color: var(--tx3);
+      margin-left: auto
+    }
+
+    .sc-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px
+    }
+
+    .sc-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--tx2)
+    }
+
+    .sc-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--bdr);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--tx3)
+    }
+
+    .sc-result {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 8px 14px;
+      border-radius: 6px
+    }
+
+    .sc-result.ok {
+      background: var(--grn-g);
+      border: 1px solid rgba(34, 200, 122, .18);
+      color: var(--grn)
+    }
+
+    .sc-result.no {
+      background: rgba(232, 72, 96, .05);
+      border: 1px solid rgba(232, 72, 96, .18);
+      color: var(--red)
+    }
+
+    /* TIMELINE */
+    .tl-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px
+    }
+
+    .tl-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: var(--tx3);
+      width: 90px;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    .tl-track {
+      flex: 1;
+      height: 28px;
+      background: rgba(255, 255, 255, .02);
+      border-radius: 5px;
+      position: relative
+    }
+
+    .tl-fill {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, .65);
+      white-space: nowrap
+    }
+
+    .tl-total {
+      text-align: center;
+      margin-top: 16px
+    }
+
+    .tl-total span {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      padding: 7px 20px;
+      border-radius: 6px;
+      border: 1px solid var(--bdr);
+      color: var(--tx2);
+      background: var(--bg2)
+    }
+
+    /* FOOTER */
+    .ftr {
+      text-align: center;
+      padding: 36px 0;
+      border-top: 1px solid var(--bdr);
+      margin-top: 24px
+    }
+
+    .ftr p {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      color: var(--tx3)
+    }
+
+    /* REVEAL */
+    .rv {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .5s ease, transform .5s ease
+    }
+
+    .rv.vis {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    @media(max-width:768px) {
+      .w {
+        padding: 0 16px
+      }
+
+      .stats {
+        gap: 8px
+      }
+
+      .stat-card {
+        min-width: 100px;
+        padding: 14px 16px
+      }
+    }
+
+
+    /* ================================================================
+   SECTION 2: ERD STYLES (deduped resets)
+   ================================================================ */
+
+
+
+
+    .w {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 32px
+    }
+
+    a {
+      color: var(--swg);
+      text-decoration: none
+    }
+
+    /* ===== HEADER ===== */
+    .hdr {
+      padding: 52px 0 28px;
+      border-bottom: 1px solid var(--bdr);
+      margin-bottom: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 20px
+    }
+
+    .hdr-l h1 {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(26px, 3.8vw, 42px);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.12
+    }
+
+    .hdr-l .sub {
+      font-size: 14px;
+      color: var(--tx2);
+      margin-top: 6px;
+      max-width: 620px
+    }
+
+    .hdr-r {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .pill {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 5px;
+      letter-spacing: .5px;
+      white-space: nowrap
+    }
+
+    .pill.v3 {
+      background: var(--swg);
+      color: var(--bg)
+    }
+
+    .pill.out {
+      border: 1.5px solid var(--bdr2);
+      color: var(--tx2)
+    }
+
+    /* ===== CORRECTION BANNER ===== */
+    .correction {
+      background: linear-gradient(135deg, var(--swg-g), var(--xsys-g), var(--grc-g));
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 36px
+    }
+
+    .correction h3 {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--swg);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .correction h3 .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--swg);
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .cor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px
+    }
+
+    @media(max-width:768px) {
+      .cor-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .cor-card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 18px 20px
+    }
+
+    .cor-card .cor-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .cor-card .cor-label .x {
+      color: #e85050
+    }
+
+    .cor-card .cor-label .check {
+      color: var(--new)
+    }
+
+    .cor-card p {
+      font-size: 13px;
+      color: var(--tx2);
+      line-height: 1.6
+    }
+
+    .cor-card strong {
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    .cor-card.wrong {
+      border-color: rgba(232, 80, 80, .2);
+      background: rgba(232, 80, 80, .03)
+    }
+
+    .cor-card.right {
+      border-color: var(--new-b);
+      background: var(--new-g)
+    }
+
+    /* ===== HIERARCHY VISUAL ===== */
+    .hier-section {
+      margin-bottom: 40px
+    }
+
+    .hier-visual {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      padding: 32px;
+      overflow-x: auto
+    }
+
+    .hier-inner {
+      min-width: 700px
+    }
+
+    .hier-tier {
+      margin-bottom: 24px
+    }
+
+    .hier-tier-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-bottom: 10px;
+      padding-left: 4px
+    }
+
+    .hier-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    .hier-box {
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      padding: 14px 18px;
+      min-width: 160px;
+      transition: all .2s
+    }
+
+    .hier-box:hover {
+      border-color: var(--hb-c, var(--bdr2));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .2)
+    }
+
+    .hier-box .hb-icon {
+      font-size: 18px;
+      margin-bottom: 4px;
+      display: block
+    }
+
+    .hier-box .hb-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .hier-box .hb-desc {
+      font-size: 11px;
+      color: var(--tx3);
+      margin-top: 2px
+    }
+
+    .hier-box.first-class {
+      background: color-mix(in srgb, var(--hb-c, #888) 6%, var(--bg2));
+      border-color: color-mix(in srgb, var(--hb-c, #888) 30%, transparent)
+    }
+
+    .hier-box.sub {
+      background: var(--bg2);
+      opacity: .85
+    }
+
+    .hier-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0
+    }
+
+    .hier-arrow span {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: var(--tx3);
+      padding: 3px 12px;
+      background: var(--bg);
+      border: 1px solid var(--bdr);
+      border-radius: 20px
+    }
+
+    /* ===== FILTERS ===== */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--bdr)
+    }
+
+    .f-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-right: 6px
+    }
+
+    .f-btn {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 5px;
+      border: 1.5px solid var(--bdr);
+      background: var(--bg1);
+      color: var(--tx2);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none
+    }
+
+    .f-btn:hover {
+      border-color: var(--bdr2);
+      background: var(--bg2)
+    }
+
+    .f-btn.on {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink)
+    }
+
+    .f-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--bdr);
+      margin: 0 6px
+    }
+
+    .legend-i {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--tx2)
+    }
+
+    .lg-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      flex-shrink: 0
+    }
+
+    /* ===== SECTION HEADS ===== */
+    .sh {
+      margin: 44px 0 22px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--bdr)
+    }
+
+    .sh h2 {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .sh p {
+      font-size: 13.5px;
+      color: var(--tx2);
+      margin-top: 2px
+    }
+
+    /* ===== ERD TABLE CARDS ===== */
+    .erd {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px
+    }
+
+    .t {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 11px;
+      overflow: hidden;
+      transition: all .25s
+    }
+
+    .t:hover {
+      border-color: var(--tc, var(--bdr2));
+      box-shadow: 0 6px 28px rgba(0, 0, 0, .15);
+      transform: translateY(-2px)
+    }
+
+    .t.dim {
+      opacity: .12;
+      transform: scale(.97);
+      pointer-events: none
+    }
+
+    /* Header */
+    .th {
+      padding: 12px 16px 10px;
+      border-bottom: 1.5px solid var(--bdr);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--bg2)
+    }
+
+    .th-i {
+      font-size: 14px;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: color-mix(in srgb, var(--tc, #666) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--tc, #666) 18%, transparent)
+    }
+
+    .th-n {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1
+    }
+
+    .badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+      letter-spacing: .3px
+    }
+
+    .badge.nt {
+      background: var(--new-g);
+      color: var(--new);
+      border: 1px solid var(--new-b)
+    }
+
+    .badge.mt {
+      background: var(--mod-g);
+      color: var(--mod);
+      border: 1px solid var(--mod-b)
+    }
+
+    .badge.vt {
+      background: rgba(90, 101, 128, .08);
+      color: var(--tx3);
+      border: 1px solid rgba(90, 101, 128, .15)
+    }
+
+    .badge.nc {
+      background: var(--new-g);
+      color: var(--new);
+      font-size: 7.5px;
+      margin-left: 3px
+    }
+
+    .th-p {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: color-mix(in srgb, var(--tc, #666) 7%, transparent);
+      color: var(--tc, var(--tx3));
+      border: 1px solid color-mix(in srgb, var(--tc, #666) 15%, transparent);
+      white-space: nowrap
+    }
+
+    /* Body */
+    .tb {
+      padding: 3px 0
+    }
+
+    .r {
+      display: flex;
+      align-items: center;
+      padding: 3px 16px;
+      gap: 7px;
+      font-size: 11.5px
+    }
+
+    .r:hover {
+      background: rgba(255, 255, 255, .015)
+    }
+
+    .r.hi {
+      background: rgba(32, 192, 128, .025)
+    }
+
+    .k {
+      width: 17px;
+      height: 14px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fira Code', monospace;
+      font-size: 7px;
+      font-weight: 700;
+      flex-shrink: 0
+    }
+
+    .k.pk {
+      background: rgba(232, 168, 37, .1);
+      color: var(--pk-c);
+      border: 1px solid rgba(232, 168, 37, .22)
+    }
+
+    .k.fk {
+      background: rgba(69, 136, 240, .08);
+      color: var(--fk-c);
+      border: 1px solid rgba(69, 136, 240, .18)
+    }
+
+    .k.uq {
+      background: rgba(160, 125, 240, .08);
+      color: var(--uq-c);
+      border: 1px solid rgba(160, 125, 240, .18)
+    }
+
+    .k.no {
+      border: 1px solid transparent
+    }
+
+    .n {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      color: var(--ink);
+      flex: 1;
+      line-height: 1.3
+    }
+
+    .tp {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      flex-shrink: 0
+    }
+
+    .tp.s {
+      background: rgba(90, 101, 128, .06);
+      color: var(--tx3)
+    }
+
+    .tp.b {
+      background: rgba(32, 192, 128, .06);
+      color: var(--new)
+    }
+
+    .tp.rf {
+      background: rgba(69, 136, 240, .06);
+      color: var(--fk-c)
+    }
+
+    .tp.i {
+      background: rgba(160, 125, 240, .06);
+      color: var(--uq-c)
+    }
+
+    .tp.d {
+      background: rgba(232, 120, 48, .06);
+      color: var(--p6)
+    }
+
+    .tp.j {
+      background: rgba(26, 181, 212, .06);
+      color: var(--xsys)
+    }
+
+    .tp.e {
+      background: rgba(232, 72, 92, .06);
+      color: var(--p3)
+    }
+
+    .tp.tx {
+      background: rgba(90, 101, 128, .05);
+      color: var(--tx3)
+    }
+
+    .tp.m {
+      background: rgba(232, 168, 37, .06);
+      color: var(--pk-c)
+    }
+
+    .cc {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5px;
+      color: var(--tx3);
+      flex-shrink: 0;
+      max-width: 140px;
+      text-align: right
+    }
+
+    .sp {
+      height: 1px;
+      background: var(--bdr);
+      margin: 3px 16px;
+      opacity: .4
+    }
+
+    .sl {
+      font-family: 'Fira Code', monospace;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      padding: 5px 16px 1px
+    }
+
+    /* Footer */
+    .tf {
+      padding: 8px 16px 12px;
+      border-top: 1px solid var(--bdr);
+      background: var(--bg2)
+    }
+
+    .tf .rl {
+      font-family: 'Fira Code', monospace;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-bottom: 3px
+    }
+
+    .rf {
+      font-size: 10.5px;
+      color: var(--tx2);
+      padding: 1.5px 0;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .rf-a {
+      font-family: 'Fira Code', monospace;
+      font-size: 9.5px;
+      color: var(--fk-c)
+    }
+
+    .rf-t {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .rf-n {
+      font-size: 9.5px;
+      color: var(--tx3);
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px dashed var(--bdr);
+      line-height: 1.5
+    }
+
+    /* ===== HUB DIAGRAM ===== */
+    .hub-w {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      padding: 32px;
+      overflow-x: auto;
+      margin-bottom: 32px
+    }
+
+    .hub-in {
+      min-width: 820px
+    }
+
+    .hub-r {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px
+    }
+
+    .hub-n {
+      background: var(--bg2);
+      border: 1.5px solid var(--bdr);
+      border-radius: 8px;
+      padding: 10px 16px;
+      text-align: center;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
+      min-width: 105px;
+      transition: all .15s
+    }
+
+    .hub-n:hover {
+      border-color: var(--hn, var(--bdr2));
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .1)
+    }
+
+    .hub-n.core {
+      background: var(--swg);
+      color: var(--bg);
+      border-color: var(--swg);
+      padding: 14px 22px;
+      font-size: 13px;
+      font-weight: 700
+    }
+
+    .hub-n .hn-s {
+      font-size: 8.5px;
+      font-weight: 500;
+      color: var(--hn, var(--tx3));
+      display: block;
+      margin-top: 2px
+    }
+
+    .hub-n.core .hn-s {
+      color: rgba(0, 0, 0, .5)
+    }
+
+    .hub-c {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--tx3);
+      padding: 2px 8px;
+      background: var(--bg);
+      border-radius: 3px;
+      white-space: nowrap;
+      align-self: center
+    }
+
+    .hub-d {
+      text-align: center;
+      margin: 6px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3)
+    }
+
+    /* ===== RELATIONSHIP GRID ===== */
+    .rel-g {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 8px;
+      margin-bottom: 48px
+    }
+
+    .rel-c {
+      background: var(--bg1);
+      border: 1px solid var(--bdr);
+      border-radius: 7px;
+      padding: 9px 13px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px
+    }
+
+    .rel-e {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ink);
+      padding: 3px 7px;
+      border-radius: 4px;
+      background: var(--bg2);
+      border: 1px solid var(--bdr)
+    }
+
+    .rel-t {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 3px
+    }
+
+    .rel-t.otn {
+      background: rgba(69, 136, 240, .06);
+      color: var(--fk-c)
+    }
+
+    .rel-t.mtn {
+      background: rgba(160, 125, 240, .06);
+      color: var(--uq-c)
+    }
+
+    .rel-v {
+      font-family: 'Fira Code', monospace;
+      font-size: 9.5px;
+      color: var(--tx3)
+    }
+
+    /* ===== FOOTER ===== */
+    .ftr {
+      text-align: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--bdr);
+      margin-top: 20px
+    }
+
+    .ftr p {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      color: var(--tx3)
+    }
+
+    @media(max-width:768px) {
+      .w {
+        padding: 0 16px
+      }
+
+      .erd {
+        grid-template-columns: 1fr
+      }
+
+      .rel-g {
+        grid-template-columns: 1fr
+      }
+
+      .hdr {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .hier-row {
+        flex-direction: column
+      }
+
+      .hub-r {
+        flex-direction: column;
+        align-items: center
+      }
+    }
+
+
+    /* ================================================================
+   SECTION 3: SERVER SPEC STYLES (deduped resets)
+   ================================================================ */
+
+
+
+
+    .w {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 32px
+    }
+
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center
+    }
+
+    .hero-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--swg);
+      margin-bottom: 12px
+    }
+
+    .hero h1 {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.12;
+      margin-bottom: 10px
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--tx2);
+      max-width: 640px;
+      margin: 0 auto
+    }
+
+    /* Section */
+    .sec {
+      padding: 36px 0
+    }
+
+    .sh {
+      margin-bottom: 22px
+    }
+
+    .sh h2 {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .sh h2 .ico {
+      font-size: 20px
+    }
+
+    .sh p {
+      font-size: 13.5px;
+      color: var(--tx2);
+      margin-top: 3px;
+      max-width: 640px
+    }
+
+    /* Assumptions */
+    .assumptions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 32px
+    }
+
+    .a-card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 16px 18px;
+      text-align: center
+    }
+
+    .a-card .av {
+      font-family: 'Newsreader', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .a-card .al {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: .5px;
+      color: var(--tx3);
+      margin-top: 2px
+    }
+
+    /* Spec table */
+    .spec-w {
+      overflow-x: auto;
+      margin-bottom: 28px
+    }
+
+    .spec {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12.5px;
+      min-width: 700px
+    }
+
+    .spec th {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      background: var(--bg2);
+      border-bottom: 2px solid var(--bdr);
+      text-align: left;
+      color: var(--tx3)
+    }
+
+    .spec th.tier-h {
+      text-align: center;
+      min-width: 160px
+    }
+
+    .spec td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--bdr);
+      vertical-align: top
+    }
+
+    .spec tr:hover td {
+      background: var(--bg1)
+    }
+
+    .spec td:first-child {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
+      white-space: nowrap
+    }
+
+    .spec .cat-row td {
+      background: var(--bg2);
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      padding: 8px 14px
+    }
+
+    .spec .rec {
+      background: color-mix(in srgb, var(--grn) 3%, transparent)
+    }
+
+    /* Tier headers */
+    .tier-start {
+      background: var(--ora-g);
+      color: var(--ora);
+      border: 1px solid var(--ora-b);
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px
+    }
+
+    .tier-rec {
+      background: var(--grn-g);
+      color: var(--grn);
+      border: 1px solid var(--grn-b);
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px
+    }
+
+    .tier-scale {
+      background: var(--blu-g);
+      color: var(--blu);
+      border: 1px solid var(--blu-b);
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px
+    }
+
+    /* Cost breakdown */
+    .cost-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px
+    }
+
+    .cost-card {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    .cost-card .cc-h {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bdr);
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .cost-card .cc-h h3 {
+      font-family: 'Newsreader', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .cost-card .cc-b {
+      padding: 12px 20px
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 12.5px;
+      border-bottom: 1px dashed rgba(255, 255, 255, .04)
+    }
+
+    .cost-row:last-child {
+      border-bottom: none
+    }
+
+    .cost-row .cl {
+      color: var(--tx2)
+    }
+
+    .cost-row .cv {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .cost-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-top: 2px solid var(--bdr);
+      font-weight: 700
+    }
+
+    .cost-total .cl {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--tx2)
+    }
+
+    .cost-total .cv {
+      font-family: 'Newsreader', serif;
+      font-size: 20px
+    }
+
+    .cost-total .cv.ora {
+      color: var(--ora)
+    }
+
+    .cost-total .cv.grn {
+      color: var(--grn)
+    }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      background: var(--bg1);
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      padding: 32px;
+      margin-bottom: 32px;
+      overflow-x: auto
+    }
+
+    .arch-inner {
+      min-width: 700px
+    }
+
+    .arch-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px
+    }
+
+    .arch-box {
+      background: var(--bg2);
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      padding: 12px 18px;
+      text-align: center;
+      min-width: 110px;
+      transition: all .15s
+    }
+
+    .arch-box:hover {
+      border-color: var(--ab-c, var(--bdr2));
+      transform: translateY(-1px);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, .15)
+    }
+
+    .arch-box .ab-i {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 3px
+    }
+
+    .arch-box .ab-n {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .arch-box .ab-d {
+      font-size: 9.5px;
+      color: var(--tx3);
+      margin-top: 1px
+    }
+
+    .arch-box .ab-spec {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      color: var(--ab-c, var(--tx2));
+      margin-top: 3px;
+      padding-top: 3px;
+      border-top: 1px dashed rgba(255, 255, 255, .06)
+    }
+
+    .arch-box.hl {
+      background: color-mix(in srgb, var(--ab-c, #888) 6%, var(--bg2));
+      border-color: color-mix(in srgb, var(--ab-c, #888) 25%, transparent)
+    }
+
+    .arch-arr {
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      color: var(--tx3);
+      flex-shrink: 0
+    }
+
+    .arch-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--tx3);
+      text-align: center;
+      margin: 4px 0 10px
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 18px 20px
+    }
+
+    .card .c-h {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px
+    }
+
+    .card .c-i {
+      font-size: 16px
+    }
+
+    .card .c-t {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .card .c-b {
+      font-size: 12.5px;
+      color: var(--tx2);
+      line-height: 1.6
+    }
+
+    .card code {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      background: var(--bg4);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--ink)
+    }
+
+    /* Scaling note */
+    .scale-note {
+      background: linear-gradient(135deg, var(--blu-g), var(--grn-g));
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 32px
+    }
+
+    .scale-note h3 {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blu);
+      margin-bottom: 12px
+    }
+
+    .scale-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .scale-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--tx2)
+    }
+
+    .scale-step .ss-n {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--bdr2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--tx3)
+    }
+
+    .scale-step strong {
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    .ftr {
+      text-align: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--bdr);
+      margin-top: 20px
+    }
+
+    .ftr p {
+      font-family: 'Fira Code', monospace;
+      font-size: 10.5px;
+      color: var(--tx3)
+    }
+
+    .rv {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity .5s ease, transform .5s ease
+    }
+
+    .rv.vis {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    @media(max-width:768px) {
+      .w {
+        padding: 0 16px
+      }
+
+      .cards {
+        grid-template-columns: 1fr
+      }
+
+      .cost-grid {
+        grid-template-columns: 1fr
+      }
+
+      .assumptions {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <header>
-        <h1>Welcome to the Multi-Tenant CRM/PRM Blueprint</h1>
-    </header>
-    <main>
-        <section>
-            <h2>Overview</h2>
-            <p>This blueprint provides a comprehensive framework for building a multi-tenant CRM/PRM application.
-            It includes best practices and structural guidelines.</p>
-        </section>
-        <section>
-            <h2>Features</h2>
+
+  <!-- STICKY NAV -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <div class="topnav-logo">Multi-Tenant CRM/PRM — Blueprint</div>
+      <div class="topnav-tabs">
+        <button class="topnav-tab active" onclick="switchDoc('v3',this)">
+          <span class="tab-num">1</span> Architecture
+        </button>
+        <button class="topnav-tab" onclick="switchDoc('erd',this)">
+          <span class="tab-num">2</span> ERD
+        </button>
+        <button class="topnav-tab" onclick="switchDoc('spec',this)">
+          <span class="tab-num">3</span> Server Spec
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- COVER -->
+  <div class="cover" id="cover">
+    <div class="cover-tag">Multi-Tenant CRM/PRM</div>
+    <h1>Blueprint</h1>
+    <p class="cover-sub">Architecture plan, entity relationship diagram, and server specification — unified in one
+      document.</p>
+    <div class="cover-chips">
+      <span class="cover-chip"><span class="cc-ico">🏗️</span> Architecture</span>
+      <span class="cover-chip"><span class="cc-ico">🗄️</span> ERD (18 Tables)</span>
+      <span class="cover-chip"><span class="cc-ico">🖥️</span> Server Spec (150 Users)</span>
+      <span class="cover-chip"><span class="cc-ico">🏢</span> SWG · XSYS · GRC</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: ARCHITECTURE -->
+  <div id="sec-v3" class="doc-section active">
+    <div class="section-divider">
+      <div class="sd-tag">Part 1 of 3 — Architecture</div>
+      <div class="sd-title">Company-First Multi-Tenant CRM Architecture</div>
+    </div>
+
+    <div class="w">
+
+      <!-- HERO -->
+      <section class="hero">
+        <h1><em>Company-First</em> Multi-Tenant<br>CRM Architecture</h1>
+        <p class="hero-sub">SWG, XSYS, and GRC are the first-class tenants. Each company's dashboard hosts multiple
+          vendor/principal lines (Autodesk, HERE, IBM, etc.) as switchable sub-contexts inside.</p>
+      </section>
+
+      <!-- STATS -->
+      <div class="stats">
+        <div class="stat-card" style="--sc:var(--swg)">
+          <div class="sv">3</div>
+          <div class="sl">Tenant Companies</div>
+        </div>
+        <div class="stat-card" style="--sc:var(--blu)">
+          <div class="sv">18</div>
+          <div class="sl">Principal Lines</div>
+        </div>
+        <div class="stat-card" style="--sc:var(--grn)">
+          <div class="sv">6</div>
+          <div class="sl">Build Phases</div>
+        </div>
+        <div class="stat-card" style="--sc:var(--vio)">
+          <div class="sv">~72</div>
+          <div class="sl">Files Changed</div>
+        </div>
+      </div>
+
+      <!-- HIERARCHY -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>Entity Hierarchy</h2>
+          <p>Three tiers. Companies own everything. Principals are product lines scoped within.</p>
+        </div>
+        <div class="hier">
+          <div class="hier-inner">
+            <div class="tier">
+              <div class="tier-l">Tier 1 — First-Class Tenants (users log in here)</div>
+              <div class="tier-row">
+                <div class="tier-box primary" style="--tb-c:var(--swg)"><span class="tb-i">🏢</span><span
+                    class="tb-n">SWG</span><span class="tb-d">15 principal lines · Main hub</span></div>
+                <div class="tier-box primary" style="--tb-c:var(--xsys)"><span class="tb-i">🏢</span><span
+                    class="tb-n">XSYS</span><span class="tb-d">5 principal lines · Partner focus</span></div>
+                <div class="tier-box primary" style="--tb-c:var(--grc)"><span class="tb-i">🏢</span><span
+                    class="tb-n">GRC</span><span class="tb-d">2 principal lines · Niche focus</span></div>
+              </div>
+            </div>
+            <div class="tier-arr"><span>▼ each company has_many principal lines (tabs)</span></div>
+            <div class="tier">
+              <div class="tier-l">Tier 2 — Principal Lines (sub-tabs inside company dashboard)</div>
+              <div class="tier-row">
+                <div class="tier-box sub"><span class="tb-i">📐</span><span class="tb-n">Autodesk</span><span
+                    class="tb-d">SWG only</span></div>
+                <div class="tier-box sub"><span class="tb-i">💻</span><span class="tb-n">IBM HW</span><span
+                    class="tb-d">SWG + XSYS</span></div>
+                <div class="tier-box sub"><span class="tb-i">🗺️</span><span class="tb-n">HERE</span><span
+                    class="tb-d">SWG + XSYS</span></div>
+                <div class="tier-box sub"><span class="tb-i">📱</span><span class="tb-n">Samsung</span><span
+                    class="tb-d">SWG + XSYS</span></div>
+                <div class="tier-box sub"><span class="tb-i">🏧</span><span class="tb-n">Dieboldnixdorf</span><span
+                    class="tb-d">GRC only</span></div>
+                <div class="tier-box sub" style="opacity:.4"><span class="tb-i">📦</span><span class="tb-n">+13
+                    more</span><span class="tb-d">ESRI, ZYREX, etc.</span></div>
+              </div>
+            </div>
+            <div class="tier-arr"><span>▼ each principal line has products, leads, opps, deals</span></div>
+            <div class="tier">
+              <div class="tier-l">Tier 3 — Operational Data (dual-scoped: company + principal)</div>
+              <div class="tier-row">
+                <div class="tier-box sub"><span class="tb-i">👤</span><span class="tb-n">Users</span><span
+                    class="tb-d">→ company</span></div>
+                <div class="tier-box sub"><span class="tb-i">📦</span><span class="tb-n">Products</span><span
+                    class="tb-d">→ principal</span></div>
+                <div class="tier-box sub"><span class="tb-i">🎯</span><span class="tb-n">Leads</span><span
+                    class="tb-d">co + pr</span></div>
+                <div class="tier-box sub"><span class="tb-i">💰</span><span class="tb-n">Opps</span><span
+                    class="tb-d">co + pr</span></div>
+                <div class="tier-box sub"><span class="tb-i">🛡️</span><span class="tb-n">Deals</span><span
+                    class="tb-d">co + pr</span></div>
+                <div class="tier-box sub"><span class="tb-i">📄</span><span class="tb-n">Quotes</span><span
+                    class="tb-d">co branding</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROBLEM / SOLUTION -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>Why This Matters</h2>
+        </div>
+        <div class="ps-grid">
+          <div class="ps-card prob">
+            <span class="ps-icon">✕</span>
+            <h3>Today's Problem</h3>
             <ul>
-                <li>Multi-Tenancy Support</li>
-                <li>Role-Based Access Control</li>
-                <li>Customizable User Interfaces</li>
-                <li>Integration with Third-Party Services</li>
+              <li>Only SWG exists in the system — XSYS and GRC can't log in</li>
+              <li>All vendor lines (Autodesk, HERE, IBM) are mixed together in one view</li>
+              <li>No way for SWG to see "just my Autodesk pipeline" separately from "my HERE pipeline"</li>
+              <li>Partners can poach each other's deals — no conflict detection</li>
+              <li>Quotation PDFs hardcoded to SWG branding</li>
+              <li>Adding a new company or vendor line requires code changes</li>
             </ul>
-        </section>
-        <section>
-            <h2>Getting Started</h2>
-            <p>Follow the instructions below to set up your development environment and deploy your application.</p>
-        </section>
-    </main>
-    <footer>
-        <p>© 2026 Multi-Tenant CRM/PRM Blueprint</p>
-    </footer>
+          </div>
+          <div class="ps-card sol">
+            <span class="ps-icon">✓</span>
+            <h3>After Shadow Council</h3>
+            <ul>
+              <li>SWG, XSYS, GRC each have their own tenant with separate logins</li>
+              <li>Each company dashboard has sub-tabs per vendor (Autodesk, HERE, IBM, etc.)</li>
+              <li>SWG clicks "Autodesk" tab → sees only Autodesk pipeline. Clicks "HERE" → only HERE data</li>
+              <li>Black Box validation prevents deal conflicts between sister companies</li>
+              <li>Quotations auto-brand per company (SWG/001/... or GRC/001/...)</li>
+              <li>Admin adds new companies or vendor lines via UI — zero code changes</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- VENDOR MATRIX -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>Principal × Company Role Matrix</h2>
+          <p>Each row is a vendor. Columns show what role each sister company plays. This data lives in the <code
+              style="font-family:'Fira Code',monospace;font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:3px">company_principal_roles</code>
+            table.</p>
+        </div>
+        <div class="matrix-w">
+          <table class="mtx">
+            <thead>
+              <tr>
+                <th style="width:36px">#</th>
+                <th>Principal (Vendor)</th>
+                <th class="cc swg-h">SWG</th>
+                <th class="cc xsys-h">XSYS</th>
+                <th class="cc grc-h">GRC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nc">1</td>
+                <td class="vc">IBM HARDWARE</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="rb part">→ Partner</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">2</td>
+                <td class="vc">IBM SOFTWARE</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="rb part">→ Partner</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">3</td>
+                <td class="vc">AUTODESK</td>
+                <td><span class="rb gold">★ Gold Partner</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">4</td>
+                <td class="vc">SAMSUNG</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="rb part">→ SOLIX</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">5</td>
+                <td class="vc">HERE</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="rb part">→ ZYREX</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">6</td>
+                <td class="vc">ESRI</td>
+                <td><span class="rb part">→ Partner</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">7</td>
+                <td class="vc">T-INNOWARE</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">8</td>
+                <td class="vc">ZYREX</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">9</td>
+                <td class="vc">POSITIVE TECHNOLOGIES</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">10</td>
+                <td class="vc">Z-CONVERTER</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">11</td>
+                <td class="vc">INFRAON</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">12</td>
+                <td class="vc">CLOUDERA</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">13</td>
+                <td class="vc">AIVRES</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">14</td>
+                <td class="vc">AWANIO</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">15</td>
+                <td class="vc">KAYTUS</td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">—</td>
+                <td class="vc">HCL</td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="rb part">→ Partner</span></td>
+                <td><span class="empty-c">—</span></td>
+              </tr>
+              <tr>
+                <td class="nc">—</td>
+                <td class="vc">STRATUS</td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="rb part">→ Partner</span></td>
+              </tr>
+              <tr>
+                <td class="nc">—</td>
+                <td class="vc">Dieboldnixdorf</td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="empty-c">—</span></td>
+                <td><span class="rb dist">⬆ Distributor</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- DASHBOARD PREVIEW -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>Dashboard Experience</h2>
+          <p>User logs in to their <strong>company</strong> (Tier 1). Then selects a <strong>principal line</strong>
+            (Tier 2) as a sub-tab. Menu and data change per principal.</p>
+        </div>
+        <div class="dash">
+          <div class="dash-nav">
+            <div class="dash-tab on" style="--dt-c:var(--swg)" onclick="switchCo(this,'swg')">🏢 SWG Dashboard</div>
+            <div class="dash-tab" style="--dt-c:var(--xsys)" onclick="switchCo(this,'xsys')">🏢 XSYS Dashboard</div>
+            <div class="dash-tab" style="--dt-c:var(--grc)" onclick="switchCo(this,'grc')">🏢 GRC Dashboard</div>
+          </div>
+          <div class="dash-body">
+
+            <!-- SWG -->
+            <div class="d-panel on" id="dp-swg">
+              <div class="dp-head">
+                <h3>SWG Company Dashboard</h3>
+                <span class="dp-role" style="background:var(--swg-g);color:var(--swg);border:1px solid var(--swg-b)">15
+                  Principal Lines</span>
+              </div>
+              <div class="pr-tabs">
+                <div class="pr-tab on" onclick="switchPr(this,'swg','autodesk')">📐 Autodesk</div>
+                <div class="pr-tab" onclick="switchPr(this,'swg','here')">🗺️ HERE</div>
+                <div class="pr-tab" onclick="switchPr(this,'swg','ibmhw')">💻 IBM HW</div>
+                <div class="pr-tab" onclick="switchPr(this,'swg','samsung')">📱 Samsung</div>
+                <div class="pr-tab" style="opacity:.4;cursor:default">+11 more...</div>
+              </div>
+              <div class="pr-content" id="swg-autodesk" style="display:block">
+                <div class="pc-head">📐 Autodesk <span class="pc-role">&nbsp;· SWG = Gold Partner</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">Opportunities</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🏢</span><span class="mi-l">Accounts</span></div>
+                  <div class="menu-i"><span class="mi-i">📋</span><span class="mi-l">Subscriptions</span></div>
+                  <div class="menu-i"><span class="mi-i">🎁</span><span class="mi-l">Promotions</span></div>
+                  <div class="menu-i"><span class="mi-i">📈</span><span class="mi-l">Revenue</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="swg-here" style="display:none">
+                <div class="pc-head">🗺️ HERE <span class="pc-role">&nbsp;· SWG = Distributor — Full pipeline
+                    view</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🗺️</span><span class="mi-l">Fleet Mgmt</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">Opportunities</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🛡️</span><span class="mi-l">Deal Reg.</span></div>
+                  <div class="menu-i"><span class="mi-i">🔑</span><span class="mi-l">API Keys</span></div>
+                  <div class="menu-i"><span class="mi-i">👥</span><span class="mi-l">Partners</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="swg-ibmhw" style="display:none">
+                <div class="pc-head">💻 IBM Hardware <span class="pc-role">&nbsp;· SWG = Distributor — Can manage XSYS
+                    as partner</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">Opportunities</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🏢</span><span class="mi-l">Accounts</span></div>
+                  <div class="menu-i"><span class="mi-i">🛡️</span><span class="mi-l">Deal Reg.</span></div>
+                  <div class="menu-i"><span class="mi-i">👥</span><span class="mi-l">Partners</span></div>
+                  <div class="menu-i"><span class="mi-i">📈</span><span class="mi-l">Revenue</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="swg-samsung" style="display:none">
+                <div class="pc-head">📱 Samsung <span class="pc-role">&nbsp;· SWG = Distributor</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">Opportunities</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🏢</span><span class="mi-l">Accounts</span></div>
+                  <div class="menu-i"><span class="mi-i">📈</span><span class="mi-l">Revenue</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- XSYS -->
+            <div class="d-panel" id="dp-xsys">
+              <div class="dp-head">
+                <h3>XSYS Company Dashboard</h3>
+                <span class="dp-role"
+                  style="background:var(--xsys-g);color:var(--xsys);border:1px solid var(--xsys-b)">5 Principal
+                  Lines</span>
+              </div>
+              <div class="pr-tabs">
+                <div class="pr-tab on" onclick="switchPr(this,'xsys','ibmhw2')">💻 IBM HW</div>
+                <div class="pr-tab" onclick="switchPr(this,'xsys','ibmsw2')">🖥️ IBM SW</div>
+                <div class="pr-tab" onclick="switchPr(this,'xsys','here2')">🗺️ HERE</div>
+                <div class="pr-tab" onclick="switchPr(this,'xsys','samsung2')">📱 Samsung</div>
+                <div class="pr-tab" onclick="switchPr(this,'xsys','hcl2')">🔧 HCL</div>
+              </div>
+              <div class="pr-content" id="xsys-ibmhw2" style="display:block">
+                <div class="pc-head">💻 IBM Hardware <span class="pc-role">&nbsp;· XSYS = Partner — Own deals only,
+                    Black Box active</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">My Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🛡️</span><span class="mi-l">Deal Reg.</span></div>
+                  <div class="menu-i off"><span class="mi-i">👥</span><span class="mi-l">Partners</span></div>
+                  <div class="menu-i off"><span class="mi-i">📈</span><span class="mi-l">Full Revenue</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="xsys-ibmsw2" style="display:none">
+                <div class="pc-head">🖥️ IBM Software <span class="pc-role">&nbsp;· XSYS = Partner</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">My Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="xsys-here2" style="display:none">
+                <div class="pc-head">🗺️ HERE <span class="pc-role">&nbsp;· XSYS = Partner (via ZYREX) — Own deals
+                    only</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">My Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🛡️</span><span class="mi-l">Deal Reg.</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="xsys-samsung2" style="display:none">
+                <div class="pc-head">📱 Samsung <span class="pc-role">&nbsp;· XSYS = Partner (via SOLIX)</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="xsys-hcl2" style="display:none">
+                <div class="pc-head">🔧 HCL <span class="pc-role">&nbsp;· XSYS = Partner</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GRC -->
+            <div class="d-panel" id="dp-grc">
+              <div class="dp-head">
+                <h3>GRC Company Dashboard</h3>
+                <span class="dp-role" style="background:var(--grc-g);color:var(--grc);border:1px solid var(--grc-b)">2
+                  Principal Lines</span>
+              </div>
+              <div class="pr-tabs">
+                <div class="pr-tab on" onclick="switchPr(this,'grc','diebold3')">🏧 Dieboldnixdorf</div>
+                <div class="pr-tab" onclick="switchPr(this,'grc','stratus3')">🔒 STRATUS</div>
+              </div>
+              <div class="pr-content" id="grc-diebold3" style="display:block">
+                <div class="pc-head">🏧 Dieboldnixdorf <span class="pc-role">&nbsp;· GRC = Distributor — Full
+                    control</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">🎯</span><span class="mi-l">Leads</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">Opportunities</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                  <div class="menu-i"><span class="mi-i">🏢</span><span class="mi-l">Accounts</span></div>
+                  <div class="menu-i"><span class="mi-i">🏧</span><span class="mi-l">ATM Mgmt</span></div>
+                </div>
+              </div>
+              <div class="pr-content" id="grc-stratus3" style="display:none">
+                <div class="pc-head">🔒 STRATUS <span class="pc-role">&nbsp;· GRC = Partner</span></div>
+                <div class="menu-grid">
+                  <div class="menu-i"><span class="mi-i">📊</span><span class="mi-l">My Pipeline</span></div>
+                  <div class="menu-i"><span class="mi-i">💰</span><span class="mi-l">My Opps</span></div>
+                  <div class="menu-i"><span class="mi-i">📄</span><span class="mi-l">Quotations</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- BUILD FLOW -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>Build Sequence</h2>
+          <p>6 phases. Phase 1 now creates both companies (tenants) AND principals (vendor catalog). Phase 2 bridges
+            them.</p>
+        </div>
+        <div class="flow">
+          <div class="flow-box" style="--fb-c:var(--p1)">
+            <div class="fb-p">Phase 1 — Foundation</div>
+            <div class="fb-t">Companies (Tenants) + Principals (Vendors) + Users</div>
+            <div class="fb-d">Create companies (SWG, XSYS, GRC) as first-class tenants. Create principals (18 vendors).
+              Link users to companies.</div>
+          </div>
+          <span class="flow-arr">↓</span>
+          <div class="flow-box" style="--fb-c:var(--p2)">
+            <div class="fb-p">Phase 2 — Product Matrix + Roles</div>
+            <div class="fb-t">company_principal_roles + Products + Dashboard Config</div>
+            <div class="fb-d">Map which company plays what role per vendor. Product authorization. Per-principal
+              dashboard configs.</div>
+          </div>
+          <span class="flow-arr">↓</span>
+          <div class="flow-box" style="--fb-c:var(--p3);border-width:2px">
+            <div class="fb-p">⚠ Phase 3 — Scoping Engine (Critical)</div>
+            <div class="fb-t">Dual-Scope: company_id + principal_id</div>
+            <div class="fb-d">All queries filter by current company (tenant) + current principal (active tab).
+              Dashboard, leads, opps, accounts — all dual-scoped.</div>
+          </div>
+          <span class="flow-arr">↓</span>
+          <span class="flow-lbl">Parallel Tracks</span>
+          <div class="flow-fork">
+            <div class="flow-box" style="--fb-c:var(--p4)">
+              <div class="fb-p">Phase 4 — Black Box</div>
+              <div class="fb-t">Deal Conflict Detection</div>
+              <div class="fb-d">Scoped per principal. SWG vs XSYS conflict only within IBM HW context.</div>
+            </div>
+            <div class="flow-box" style="--fb-c:var(--p5)">
+              <div class="fb-p">Phase 5 — Dashboard Split</div>
+              <div class="fb-t">Company → Principal Sub-Tabs</div>
+              <div class="fb-d">Company dashboard as home. Principal switcher as sub-tabs. Menu from dashboard_config.
+              </div>
+            </div>
+            <div class="flow-box" style="--fb-c:var(--p6)">
+              <div class="fb-p">Phase 6 — Quotation Pivot</div>
+              <div class="fb-t">Company + Principal Branding</div>
+              <div class="fb-d">Quotation: "{company_code}/seq/...". PDF: company logo + principal logo.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENARIOS -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2>How It Works In Practice</h2>
+        </div>
+
+        <div class="sc-card">
+          <div class="sc-head"><span class="sc-i">👤</span>
+            <h4>SWG User Navigating Principals</h4><span class="sc-ctx">Day-to-day usage</span>
+          </div>
+          <div class="sc-steps">
+            <div class="sc-step"><span class="sc-num">1</span>Ahmad logs in → lands on SWG Company Dashboard</div>
+            <div class="sc-step"><span class="sc-num">2</span>Sees 15 principal tabs: Autodesk, IBM HW, HERE, Samsung,
+              ...</div>
+            <div class="sc-step"><span class="sc-num">3</span>Clicks "HERE" tab → dashboard reloads with HERE pipeline,
+              HERE leads, HERE opps only</div>
+            <div class="sc-step"><span class="sc-num">4</span>Sees Fleet Mgmt + API Keys menu items (HERE-specific from
+              dashboard_config)</div>
+            <div class="sc-step"><span class="sc-num">5</span>Clicks "Autodesk" tab → pipeline switches to Autodesk
+              data, menu shows Promotions + Subscriptions</div>
+          </div>
+          <div class="sc-result ok">✓ Same user, same company — different data & menu per principal tab</div>
+        </div>
+
+        <div class="sc-card">
+          <div class="sc-head"><span class="sc-i">🛡️</span>
+            <h4>Cross-Company Deal Conflict</h4><span class="sc-ctx">Black Box in action</span>
+          </div>
+          <div class="sc-steps">
+            <div class="sc-step"><span class="sc-num">1</span>SWG user on "IBM HW" tab creates deal registration for
+              Account X</div>
+            <div class="sc-step"><span class="sc-num">2</span>XSYS user on their "IBM HW" tab tries to create deal for
+              same Account X</div>
+            <div class="sc-step"><span class="sc-num">3</span>System detects conflict within IBM HW principal scope —
+              doesn't reveal SWG's name</div>
+          </div>
+          <div class="sc-result no">✕ "Deal Locked by Another Partner" — XSYS blocked on IBM HW only</div>
+        </div>
+
+        <div class="sc-card">
+          <div class="sc-head"><span class="sc-i">📄</span>
+            <h4>GRC Quotation Branding</h4><span class="sc-ctx">Company-branded output</span>
+          </div>
+          <div class="sc-steps">
+            <div class="sc-step"><span class="sc-num">1</span>GRC user on "Dieboldnixdorf" tab creates quotation for ATM
+              hardware</div>
+            <div class="sc-step"><span class="sc-num">2</span>System generates: <strong>GRC/001/QUO/II/2026</strong>
+              (company code prefix)</div>
+            <div class="sc-step"><span class="sc-num">3</span>PDF shows GRC company logo in header + Dieboldnixdorf
+              principal logo</div>
+          </div>
+          <div class="sc-result ok">✓ Automatic dual branding — company tenant + principal vendor</div>
+        </div>
+
+        <div class="sc-card">
+          <div class="sc-head"><span class="sc-i">🆕</span>
+            <h4>Adding a New Company</h4><span class="sc-ctx">Admin operation, zero code</span>
+          </div>
+          <div class="sc-steps">
+            <div class="sc-step"><span class="sc-num">1</span>Admin creates "PT BARU" in Company management page</div>
+            <div class="sc-step"><span class="sc-num">2</span>Admin adds company_principal_roles: PT BARU = Partner for
+              IBM HW, HERE</div>
+            <div class="sc-step"><span class="sc-num">3</span>Admin creates user accounts for PT BARU</div>
+            <div class="sc-step"><span class="sc-num">4</span>PT BARU users log in → see their dashboard with 2
+              principal tabs (IBM HW, HERE)</div>
+            <div class="sc-step"><span class="sc-num">5</span>Each tab shows partner-level menus (own deals only, no
+              full pipeline)</div>
+          </div>
+          <div class="sc-result ok">✓ Zero code changes — everything via admin UI</div>
+        </div>
+      </section>
+
+      <footer class="ftr">
+        <p>Company-First Architecture · Multi-Tenant CRM/PRM</p>
+        <p style="margin-top:4px">Tenants: SWG × XSYS × GRC · Principals: 18 Vendors · Dual-Scope: company_id +
+          principal_id</p>
+      </footer>
+
+    </div>
+
+    <script>
+      // Company tab switch
+      function switchCo(el, co) {
+        document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('on'));
+        el.classList.add('on');
+        document.querySelectorAll('.d-panel').forEach(p => p.classList.remove('on'));
+        document.getElementById('dp-' + co).classList.add('on');
+      }
+      // Principal sub-tab switch
+      function switchPr(el, co, pr) {
+        const panel = document.getElementById('dp-' + co);
+        panel.querySelectorAll('.pr-tab').forEach(t => t.classList.remove('on'));
+        el.classList.add('on');
+        panel.querySelectorAll('.pr-content').forEach(c => c.style.display = 'none');
+        document.getElementById(co + '-' + pr).style.display = 'block';
+      }
+      // Scroll reveal
+    </script>
+
+  </div>
+
+  <!-- SECTION 2: ERD -->
+  <div id="sec-erd" class="doc-section">
+    <div class="section-divider">
+      <div class="sd-tag">Part 2 of 3 — Database Design</div>
+      <div class="sd-title">Entity Relationship Diagram</div>
+    </div>
+
+    <div class="w">
+
+      <!-- HEADER -->
+      <header class="hdr">
+        <div class="hdr-l">
+          <h1>ERD</h1>
+          <div class="sub">Company-First Architecture. SWG, XSYS, GRC are the first-class tenant entities. Principals
+            (Autodesk, HERE, IBM) are sub-contexts within each company's dashboard.</div>
+        </div>
+        <div class="hdr-r">
+          <span class="pill out">12 Tables</span>
+          <span class="pill out">25 FKs</span>
+        </div>
+      </header>
+
+
+      <!-- HIERARCHY VISUAL -->
+      <div class="hier-section">
+        <div class="sh">
+          <h2>Entity Hierarchy</h2>
+          <p>The correct top-down ownership model. Companies own everything. Principals are scoped within.</p>
+        </div>
+        <div class="hier-visual">
+          <div class="hier-inner">
+            <div class="hier-tier">
+              <div class="hier-tier-label">Tier 1 — First-Class Tenants (users log in here)</div>
+              <div class="hier-row">
+                <div class="hier-box first-class" style="--hb-c:var(--swg)"><span class="hb-icon">🏢</span><span
+                    class="hb-name" style="color:var(--swg)">SWG</span><span class="hb-desc">15 principal lines ·
+                    Primary distributor</span></div>
+                <div class="hier-box first-class" style="--hb-c:var(--xsys)"><span class="hb-icon">🏢</span><span
+                    class="hb-name" style="color:var(--xsys)">XSYS</span><span class="hb-desc">5 principal lines ·
+                    Mostly partner role</span></div>
+                <div class="hier-box first-class" style="--hb-c:var(--grc)"><span class="hb-icon">🏢</span><span
+                    class="hb-name" style="color:var(--grc)">GRC</span><span class="hb-desc">2 principal lines · STRATUS
+                    + Dieboldnixdorf</span></div>
+              </div>
+            </div>
+            <div class="hier-arrow"><span>▼ each company has_many principal lines</span></div>
+            <div class="hier-tier">
+              <div class="hier-tier-label">Tier 2 — Principal Lines (tabs within company dashboard)</div>
+              <div class="hier-row">
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span class="hb-name">Autodesk</span><span
+                    class="hb-desc">SWG = Gold Partner</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span class="hb-name">IBM Hardware</span><span
+                    class="hb-desc">SWG = Dist, XSYS = Partner</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span class="hb-name">HERE</span><span
+                    class="hb-desc">SWG = Dist, XSYS = Partner</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span class="hb-name">Samsung</span><span
+                    class="hb-desc">SWG = Distributor</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span
+                    class="hb-name">Dieboldnixdorf</span><span class="hb-desc">GRC = Distributor</span></div>
+                <div class="hier-box sub" style="opacity:.5"><span class="hb-icon">📦</span><span class="hb-name">+13
+                    more...</span><span class="hb-desc">ESRI, ZYREX, CLOUDERA, etc.</span></div>
+              </div>
+            </div>
+            <div class="hier-arrow"><span>▼ each principal line has products, leads, opps, deals</span></div>
+            <div class="hier-tier">
+              <div class="hier-tier-label">Tier 3 — Operational Data (scoped by company + principal)</div>
+              <div class="hier-row">
+                <div class="hier-box sub"><span class="hb-icon">👤</span><span class="hb-name">Users</span><span
+                    class="hb-desc">Belong to company</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📦</span><span class="hb-name">Products</span><span
+                    class="hb-desc">Belong to principal</span></div>
+                <div class="hier-box sub"><span class="hb-icon">🎯</span><span class="hb-name">Leads</span><span
+                    class="hb-desc">company + principal</span></div>
+                <div class="hier-box sub"><span class="hb-icon">💰</span><span class="hb-name">Opportunities</span><span
+                    class="hb-desc">company + principal</span></div>
+                <div class="hier-box sub"><span class="hb-icon">🛡️</span><span class="hb-name">Deal Reg.</span><span
+                    class="hb-desc">company + principal</span></div>
+                <div class="hier-box sub"><span class="hb-icon">📄</span><span class="hb-name">Quotations</span><span
+                    class="hb-desc">via user → company</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters">
+        <span class="f-label">Filter</span>
+        <button class="f-btn on" onclick="flt(this,'all')">All</button>
+        <button class="f-btn" onclick="flt(this,'new')">New Tables</button>
+        <button class="f-btn" onclick="flt(this,'mod')">Modified</button>
+        <span class="f-sep"></span>
+        <button class="f-btn" onclick="flt(this,'p1')">Phase 1</button>
+        <button class="f-btn" onclick="flt(this,'p2')">Phase 2</button>
+        <button class="f-btn" onclick="flt(this,'p3')">Phase 3</button>
+        <button class="f-btn" onclick="flt(this,'p4')">Phase 4</button>
+        <button class="f-btn" onclick="flt(this,'p6')">Phase 6</button>
+        <span class="f-sep"></span>
+        <span class="legend-i"><span class="lg-dot" style="background:var(--pk-c)"></span>PK</span>
+        <span class="legend-i"><span class="lg-dot" style="background:var(--fk-c)"></span>FK</span>
+        <span class="legend-i"><span class="lg-dot" style="background:var(--uq-c)"></span>UQ</span>
+        <span class="f-sep"></span>
+        <span class="badge nt">NEW</span>
+        <span class="badge mt">MOD</span>
+        <span class="badge vt">V1</span>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- ERD TABLES                                   -->
+      <!-- ============================================ -->
+      <div class="sh">
+        <h2>Database Tables</h2>
+        <p>12 tables. Companies table is the primary tenant hub. Principals table is the vendor/product-line catalog.
+        </p>
+      </div>
+
+      <div class="erd" id="eg">
+
+        <!-- ===== COMPANIES ===== -->
+        <div class="t" data-s="v1" data-p="p1" style="--tc:var(--swg)">
+          <div class="th"><span class="th-i">🏢</span><span class="th-n">companies</span><span
+              class="badge vt">V1</span><span class="th-p">P1</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k uq">UQ</span><span class="n">code</span><span class="tp s">string</span><span
+                class="cc">NOT NULL, UNIQUE</span></div>
+            <div class="r"><span class="k no"></span><span class="n">name</span><span class="tp s">string</span><span
+                class="cc">NOT NULL</span></div>
+            <div class="sp"></div>
+            <div class="sl">Capabilities</div>
+            <div class="r"><span class="k no"></span><span class="n">is_distributor_mode</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">is_customer_owner</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">can_sell_direct</span><span
+                class="tp b">bool</span><span class="cc">def: true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">active</span><span class="tp b">bool</span><span
+                class="cc">def: true</span></div>
+            <div class="sp"></div>
+            <div class="sl">Contact & Branding</div>
+            <div class="r"><span class="k no"></span><span class="n">address</span><span class="tp s">string</span><span
+                class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">phone</span><span class="tp s">string</span><span
+                class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">email</span><span class="tp s">string</span><span
+                class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">website</span><span class="tp s">string</span><span
+                class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">logo_path</span><span
+                class="tp s">string</span><span class="cc">PDF/email branding</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Relationships (Primary Tenant Hub)</div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">users</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">company_principal_roles</span> (→
+              principals)</div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">company_products</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">leads, opportunities,
+                deal_registrations</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">accounts</span> (as managed_by)</div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">resellers</span> (optional link)</div>
+            <div class="rf-n">🏢 <strong>FIRST-CLASS TENANT.</strong> Users log in to a company. Dashboard renders
+              company context. Principal lines appear as sub-tabs within the company dashboard. SWG user sees 15 tabs;
+              XSYS user sees 5; GRC sees 2.</div>
+          </div>
+        </div>
+
+        <!-- ===== PRINCIPALS ===== -->
+        <div class="t" data-s="new" data-p="p1" style="--tc:var(--p1)">
+          <div class="th"><span class="th-i">🏭</span><span class="th-n">principals</span><span
+              class="badge nt">NEW</span><span class="th-p">P1</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k uq">UQ</span><span class="n">code</span><span class="tp s">string</span><span
+                class="cc">NOT NULL, UNIQUE</span></div>
+            <div class="r"><span class="k no"></span><span class="n">name</span><span class="tp s">string</span><span
+                class="cc">NOT NULL</span></div>
+            <div class="sp"></div>
+            <div class="sl">Branding & Info</div>
+            <div class="r"><span class="k no"></span><span class="n">logo_path</span><span
+                class="tp s">string</span><span class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">website</span><span class="tp s">string</span><span
+                class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">description</span><span
+                class="tp tx">text</span><span class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">category</span><span
+                class="tp s">string</span><span class="cc">Software / Hardware</span></div>
+            <div class="sp"></div>
+            <div class="sl">Settings</div>
+            <div class="r"><span class="k no"></span><span class="n">active</span><span class="tp b">bool</span><span
+                class="cc">def: true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">sort_order</span><span
+                class="tp i">integer</span><span class="cc">def: 0</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Relationships (Vendor Catalog)</div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">company_principal_roles</span> (→
+              companies)</div>
+            <div class="rf"><span class="rf-a">1→1</span> <span class="rf-t">principal_dashboard_config</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">products</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">leads, opportunities,
+                deal_registrations</span></div>
+            <div class="rf-n">Vendor catalog: Autodesk, IBM HW, IBM SW, HERE, Samsung, ESRI, T-INNOWARE, ZYREX, Pos.
+              Tech., Z-Converter, INFRAON, CLOUDERA, AIVRES, AWANIO, KAYTUS, HCL, STRATUS, Dieboldnixdorf. <strong>NOT
+                the tenant</strong> — these appear as tabs/sub-contexts within a company dashboard.</div>
+          </div>
+        </div>
+
+        <!-- ===== COMPANY_PRINCIPAL_ROLES ===== -->
+        <div class="t" data-s="new" data-p="p2" style="--tc:var(--p2)">
+          <div class="th"><span class="th-i">⚡</span><span class="th-n">company_principal_roles</span><span
+              class="badge nt">NEW</span><span class="th-p">P2</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id</span><span class="tp rf">→
+                companies</span><span class="cc">NOT NULL</span></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id</span><span class="tp rf">→
+                principals</span><span class="cc">NOT NULL</span></div>
+            <div class="sp"></div>
+            <div class="sl">Role Definition</div>
+            <div class="r"><span class="k no"></span><span class="n">role</span><span class="tp e">enum</span><span
+                class="cc">distributor|partner|gold_partner</span></div>
+            <div class="r"><span class="k no"></span><span class="n">is_primary_distributor</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="sp"></div>
+            <div class="sl">Permissions</div>
+            <div class="r"><span class="k no"></span><span class="n">can_view_full_pipeline</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">can_manage_partners</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">can_approve_deals</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">can_manage_accounts</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">active</span><span class="tp b">bool</span><span
+                class="cc">def: true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">notes</span><span class="tp tx">text</span><span
+                class="cc">e.g. "via ZYREX"</span></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Join Table: companies ↔ principals</div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">companies</span></div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">principals</span></div>
+            <div class="rf-n">INDEX: [company_id, principal_id] UNIQUE.<br>"SWG is Distributor for HERE" · "SWG is Gold
+              Partner for Autodesk" · "XSYS is Partner for IBM HW" · "GRC is Distributor for
+              Dieboldnixdorf"<br>Determines which principal tabs appear in each company's dashboard + what permissions
+              each company has per principal.</div>
+          </div>
+        </div>
+
+        <!-- ===== PRINCIPAL_DASHBOARD_CONFIGS ===== -->
+        <div class="t" data-s="new" data-p="p2" style="--tc:var(--p5)">
+          <div class="th"><span class="th-i">📊</span><span class="th-n">principal_dashboard_configs</span><span
+              class="badge nt">NEW</span><span class="th-p">P2/P5</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id</span><span class="tp rf">→
+                principals</span><span class="cc">NOT NULL, UNIQUE</span></div>
+            <div class="sp"></div>
+            <div class="sl">Display</div>
+            <div class="r"><span class="k no"></span><span class="n">dashboard_title</span><span
+                class="tp s">string</span><span class="cc">e.g. "Autodesk Hub"</span></div>
+            <div class="r"><span class="k no"></span><span class="n">theme_color</span><span
+                class="tp s">string</span><span class="cc">#hex</span></div>
+            <div class="r"><span class="k no"></span><span class="n">logo_override</span><span
+                class="tp s">string</span><span class="cc">optional</span></div>
+            <div class="sp"></div>
+            <div class="sl">Module Configuration</div>
+            <div class="r"><span class="k no"></span><span class="n">enabled_modules</span><span
+                class="tp j">jsonb</span><span class="cc">["pipeline","leads",...]</span></div>
+            <div class="r"><span class="k no"></span><span class="n">menu_config</span><span
+                class="tp j">jsonb</span><span class="cc">per-role menu items</span></div>
+            <div class="r"><span class="k no"></span><span class="n">custom_features</span><span
+                class="tp j">jsonb</span><span class="cc">vendor-specific modules</span></div>
+            <div class="sp"></div>
+            <div class="sl">Feature Flags</div>
+            <div class="r"><span class="k no"></span><span class="n">show_promotions</span><span
+                class="tp b">bool</span><span class="cc">def: true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">show_subscriptions</span><span
+                class="tp b">bool</span><span class="cc">def: true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">show_deal_registration</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">show_fleet_management</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="r"><span class="k no"></span><span class="n">show_api_keys</span><span
+                class="tp b">bool</span><span class="cc">def: false</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Relationships</div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">principals</span> (1:1)</div>
+            <div class="rf-n">One config per principal. When SWG user clicks "HERE" tab → system loads HERE's dashboard
+              config → renders Fleet Mgmt + API Keys. When they click "Autodesk" tab → renders Promotions +
+              Subscriptions. The company's role (from company_principal_roles) further filters what's visible within.
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== USERS ===== -->
+        <div class="t" data-s="mod" data-p="p1" style="--tc:var(--p1)">
+          <div class="th"><span class="th-i">👤</span><span class="th-n">users</span><span
+              class="badge mt">MOD</span><span class="th-p">P1</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span class="cc">NOT
+                NULL</span></div>
+            <div class="sp"></div>
+            <div class="sl">Existing Columns</div>
+            <div class="r"><span class="k no"></span><span class="n">email</span><span class="tp s">string</span><span
+                class="cc">NOT NULL, UNIQUE</span></div>
+            <div class="r"><span class="k no"></span><span class="n">name / role / encrypted_password / ...</span><span
+                class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Relationships</div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">companies</span> <span
+                class="badge nc">NEW</span></div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">leads, opportunities, quotations,
+                deal_registrations</span></div>
+            <div class="rf-n">User belongs to a company (tenant). Inherits all company's principal roles. SWG user has
+              access to 15 principal tabs. XSYS user sees 5. No direct FK to principals — access derived through company
+              → company_principal_roles.</div>
+          </div>
+        </div>
+
+        <!-- ===== PRODUCTS ===== -->
+        <div class="t" data-s="mod" data-p="p2" style="--tc:var(--p2)">
+          <div class="th"><span class="th-i">📦</span><span class="th-n">products</span><span
+              class="badge mt">MOD</span><span class="th-p">P2</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ principals</span><span class="cc">NOT
+                NULL</span></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span
+                class="cc">nullable</span></div>
+            <div class="r hi"><span class="k no"></span><span class="n">allow_direct_sales <span
+                  class="badge nc">NEW</span></span><span class="tp b">bool</span><span class="cc">def: true</span>
+            </div>
+            <div class="sp"></div>
+            <div class="sl">Existing Columns</div>
+            <div class="r"><span class="k no"></span><span class="n">name / sku / description / price / ...</span><span
+                class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rl">Relationships</div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">principals</span> <span
+                class="badge nc">NEW</span></div>
+            <div class="rf"><span class="rf-a">←1</span> belongs_to <span class="rf-t">companies</span> (as
+              principal_company)</div>
+            <div class="rf"><span class="rf-a">1→N</span> <span class="rf-t">company_products, deal_registrations</span>
+            </div>
+            <div class="rf-n">Products live under a principal. "AutoCAD" → principal: Autodesk. "Power S1024" →
+              principal: IBM Hardware. Products show up in a company's dashboard only when that company has a role for
+              that principal.</div>
+          </div>
+        </div>
+
+        <!-- ===== COMPANY_PRODUCTS ===== -->
+        <div class="t" data-s="v1" data-p="p2" style="--tc:var(--p2)">
+          <div class="th"><span class="th-i">🔗</span><span class="th-n">company_products</span><span
+              class="badge vt">V1</span><span class="th-p">P2</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">company_id</span><span class="tp rf">→
+                companies</span><span class="cc">NOT NULL</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">product_id</span><span class="tp rf">→
+                products</span><span class="cc">NOT NULL</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">is_principal / can_sell</span><span
+                class="tp b">bool</span><span class="cc">def: false / true</span></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">INDEX: [company_id, product_id] UNIQUE. SKU-level authorization. Which specific products a
+              company can sell within a principal line.</div>
+          </div>
+        </div>
+
+        <!-- ===== RESELLERS ===== -->
+        <div class="t" data-s="mod" data-p="p2" style="--tc:var(--p2)">
+          <div class="th"><span class="th-i">🤝</span><span class="th-n">resellers</span><span
+              class="badge mt">MOD</span><span class="th-p">P2</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span
+                class="cc">nullable</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">name / contact / ...</span><span
+                class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">Links external partners (SOLIX, ZYREX, HCL, STRATUS) to sister companies when applicable.
+              Optional FK.</div>
+          </div>
+        </div>
+
+        <!-- ===== LEADS ===== -->
+        <div class="t" data-s="mod" data-p="p3" style="--tc:var(--p3)">
+          <div class="th"><span class="th-i">🎯</span><span class="th-n">leads</span><span
+              class="badge mt">MOD</span><span class="th-p">P3</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span class="cc">NOT
+                NULL</span></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ principals</span><span
+                class="cc">nullable</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">user_id</span><span class="tp rf">→
+                users</span><span class="cc"></span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">name / email / phone / status / source /
+                ...</span><span class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">company_id = tenant scope (which sister company owns this lead). principal_id = which
+              vendor tab this lead belongs to. SWG user on "HERE" tab sees only leads where company_id=SWG AND
+              principal_id=HERE.</div>
+          </div>
+        </div>
+
+        <!-- ===== OPPORTUNITIES ===== -->
+        <div class="t" data-s="mod" data-p="p3" style="--tc:var(--p3)">
+          <div class="th"><span class="th-i">💰</span><span class="th-n">opportunities</span><span
+              class="badge mt">MOD</span><span class="th-p">P3</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span class="cc">NOT
+                NULL</span></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ principals</span><span
+                class="cc">nullable</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">user_id</span><span class="tp rf">→
+                users</span><span class="cc"></span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">account_id</span><span class="tp rf">→
+                accounts</span><span class="cc"></span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">stage / value / close_date / sales_channel /
+                ...</span><span class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">Dual-scoped: company_id (tenant) + principal_id (vendor context). Dashboard queries always
+              filter both. Conflict detection also scoped to same principal.</div>
+          </div>
+        </div>
+
+        <!-- ===== ACCOUNTS ===== -->
+        <div class="t" data-s="mod" data-p="p3" style="--tc:var(--p3)">
+          <div class="th"><span class="th-i">🏦</span><span class="th-n">accounts</span><span
+              class="badge mt">MOD</span><span class="th-p">P3</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">managed_by_company_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ companies</span><span
+                class="cc">nullable</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">name / account_owner / industry / ...</span><span
+                class="tp s">various</span><span class="cc">existing</span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">managed_by_company_id = client locking. An account managed by XSYS is locked across ALL
+              principal contexts. Accounts are shared entities not scoped to one principal.</div>
+          </div>
+        </div>
+
+        <!-- ===== DEAL_REGISTRATIONS ===== -->
+        <div class="t" data-s="mod" data-p="p4" style="--tc:var(--p4)">
+          <div class="th"><span class="th-i">🛡️</span><span class="th-n">deal_registrations</span><span
+              class="badge mt">MOD</span><span class="th-p">P4</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="sl">Foreign Keys</div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">company_id</span><span class="tp rf">→
+                companies</span><span class="cc">NOT NULL</span></div>
+            <div class="r hi"><span class="k fk">FK</span><span class="n">principal_id <span
+                  class="badge nc">NEW</span></span><span class="tp rf">→ principals</span><span class="cc">NOT
+                NULL</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">user_id</span><span class="tp rf">→
+                users</span><span class="cc">NOT NULL</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">account_id</span><span class="tp rf">→
+                accounts</span><span class="cc">NOT NULL</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">product_id</span><span class="tp rf">→
+                products</span><span class="cc">nullable</span></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">approved_by_id</span><span class="tp rf">→
+                users</span><span class="cc">nullable</span></div>
+            <div class="sp"></div>
+            <div class="sl">Status & Workflow</div>
+            <div class="r"><span class="k no"></span><span class="n">status</span><span class="tp e">enum</span><span
+                class="cc">pending|approved|rejected|expired</span></div>
+            <div class="r"><span class="k no"></span><span class="n">expected_close_date</span><span
+                class="tp d">date</span><span class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">justification</span><span
+                class="tp tx">text</span><span class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">rejection_reason</span><span
+                class="tp tx">text</span><span class="cc"></span></div>
+            <div class="r"><span class="k no"></span><span class="n">approved_at / expires_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+            <div class="sp"></div>
+            <div class="sl">Monetary Value</div>
+            <div class="r"><span class="k no"></span><span class="n">estimated_value_cents</span><span
+                class="tp m">bigint</span><span class="cc">def: 0</span></div>
+            <div class="r"><span class="k no"></span><span class="n">estimated_value_currency</span><span
+                class="tp s">string</span><span class="cc">def: 'IDR'</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">created_at / updated_at</span><span
+                class="tp d">datetime</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">INDEX: [principal_id, account_id, company_id, status].<br>Conflict detection: SWG vs XSYS
+              clash on IBM HW only, not across all vendors. Scoped by principal.</div>
+          </div>
+        </div>
+
+        <!-- ===== QUOTATIONS ===== -->
+        <div class="t" data-s="mod" data-p="p6" style="--tc:var(--p6)">
+          <div class="th"><span class="th-i">📄</span><span class="th-n">quotations</span><span
+              class="badge mt">MOD</span><span class="th-p">P6</span></div>
+          <div class="tb">
+            <div class="r"><span class="k pk">PK</span><span class="n">id</span><span class="tp i">bigint</span><span
+                class="cc">auto</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k fk">FK</span><span class="n">user_id</span><span class="tp rf">→
+                users</span><span class="cc"></span></div>
+            <div class="sp"></div>
+            <div class="sl">Modified Logic (no new columns)</div>
+            <div class="r hi"><span class="k no"></span><span class="n">prefix</span><span
+                class="tp s">string</span><span class="cc">← user.company.code</span></div>
+            <div class="r hi"><span class="k no"></span><span class="n">number</span><span
+                class="tp s">string</span><span class="cc">← "{code}/seq/..."</span></div>
+            <div class="sp"></div>
+            <div class="r"><span class="k no"></span><span class="n">... other existing columns</span><span
+                class="tp s">various</span><span class="cc"></span></div>
+          </div>
+          <div class="tf">
+            <div class="rf-n">No schema change — logic only. Prefix from user.company.code. PDF header shows company
+              logo + principal logo (derived from opportunity/product context).</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== HUB DIAGRAM ===== -->
+      <div class="sh">
+        <h2>Relationship Hub</h2>
+        <p>Companies (tenants) are the primary hub. Principals (vendors) are the secondary hub. Everything else connects
+          through them.</p>
+      </div>
+
+      <div class="hub-w">
+        <div class="hub-in">
+          <div class="hub-r">
+            <div class="hub-n core" style="background:var(--swg);border-color:var(--swg)">🏢 companies<span
+                class="hn-s">PRIMARY TENANT HUB</span></div>
+            <span class="hub-c" style="font-size:10px;padding:6px 14px">⟵ M:N via company_principal_roles ⟶</span>
+            <div class="hub-n"
+              style="--hn:var(--p1);border-color:var(--p1);background:color-mix(in srgb,var(--p1) 8%,var(--bg2))">🏭
+              principals<span class="hn-s" style="color:var(--p1)">VENDOR CATALOG</span></div>
+          </div>
+          <div class="hub-d">— company owns —</div>
+          <div class="hub-r">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:N</span>
+              <div class="hub-n" style="--hn:var(--p1)">👤 users<span class="hn-s">P1</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:N</span>
+              <div class="hub-n" style="--hn:var(--p2)">🔗 company_products<span class="hn-s">P2</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:N</span>
+              <div class="hub-n" style="--hn:var(--p2)">🤝 resellers<span class="hn-s">P2 · opt</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:N
+                managed_by</span>
+              <div class="hub-n" style="--hn:var(--p3)">🏦 accounts<span class="hn-s">P3</span></div>
+            </div>
+          </div>
+          <div class="hub-d">— dual-scoped by company + principal —</div>
+          <div class="hub-r">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">co +
+                pr</span>
+              <div class="hub-n" style="--hn:var(--p3)">🎯 leads<span class="hn-s">P3</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">co +
+                pr</span>
+              <div class="hub-n" style="--hn:var(--p3)">💰 opportunities<span class="hn-s">P3</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">co +
+                pr</span>
+              <div class="hub-n" style="--hn:var(--p4)">🛡️ deal_registrations<span class="hn-s">P4</span></div>
+            </div>
+          </div>
+          <div class="hub-d">— principal owns —</div>
+          <div class="hub-r">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:N</span>
+              <div class="hub-n" style="--hn:var(--p2)">📦 products<span class="hn-s">P2</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="hub-c">1:1</span>
+              <div class="hub-n" style="--hn:var(--p5)">📊 dashboard_configs<span class="hn-s">P5</span></div>
+            </div>
+          </div>
+          <div class="hub-d">— indirect via user → company —</div>
+          <div class="hub-r">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span
+                class="hub-c">branding</span>
+              <div class="hub-n" style="--hn:var(--p6)">📄 quotations<span class="hn-s">P6</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ALL RELATIONSHIPS ===== -->
+      <div class="sh">
+        <h2>All Foreign Key Relationships</h2>
+        <p>25 relationships across 12 tables.</p>
+      </div>
+
+      <div class="rel-g">
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">users</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">company_principal_roles</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">company_principal_roles</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t mtn">M:N</span><span
+            class="rel-e">principals</span><span class="rel-v">through roles</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:1</span><span
+            class="rel-e">principal_dashboard_configs</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">products</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">products</span><span class="rel-v">principal_company_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">company_products</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">products</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">company_products</span><span class="rel-v">product_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">resellers</span><span class="rel-v">company_id (opt)</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">leads</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">leads</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">users</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">leads</span><span class="rel-v">user_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">opportunities</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">opportunities</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">users</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">opportunities</span><span class="rel-v">user_id</span></div>
+        <div class="rel-c"><span class="rel-e">accounts</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">opportunities</span><span class="rel-v">account_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">accounts</span><span class="rel-v">managed_by_company_id</span></div>
+        <div class="rel-c"><span class="rel-e">companies</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">company_id</span></div>
+        <div class="rel-c"><span class="rel-e">principals</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">principal_id</span></div>
+        <div class="rel-c"><span class="rel-e">users</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">user_id</span></div>
+        <div class="rel-c"><span class="rel-e">users</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">approved_by_id</span></div>
+        <div class="rel-c"><span class="rel-e">accounts</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">account_id</span></div>
+        <div class="rel-c"><span class="rel-e">products</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">deal_registrations</span><span class="rel-v">product_id (opt)</span></div>
+        <div class="rel-c"><span class="rel-e">users</span><span class="rel-t otn">1:N</span><span
+            class="rel-e">quotations</span><span class="rel-v">user_id → company</span></div>
+      </div>
+
+      <footer class="ftr">
+        <p>Company-First Architecture · 12 Tables · 25 Relationships</p>
+        <p style="margin-top:4px">Tenants: SWG × XSYS × GRC · Principals: 18 Vendors · Dual-Scope: company_id +
+          principal_id</p>
+      </footer>
+
+    </div>
+
+    <script>
+      function flt(b, f) {
+        document.querySelectorAll('.f-btn').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+        document.querySelectorAll('.t').forEach(t => {
+          if (f === 'all') t.classList.remove('dim');
+          else if (f === 'new') t.classList.toggle('dim', t.dataset.s !== 'new');
+          else if (f === 'mod') t.classList.toggle('dim', t.dataset.s === 'v1');
+          else t.classList.toggle('dim', t.dataset.p !== f);
+        });
+      }
+    </script>
+
+  </div>
+
+  <!-- SECTION 3: SERVER SPEC -->
+  <div id="sec-spec" class="doc-section">
+    <div class="section-divider">
+      <div class="sd-tag">Part 3 of 3 — Infrastructure</div>
+      <div class="sd-title">Server Specification for 150 Concurrent Users</div>
+    </div>
+
+    <div class="w">
+
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-tag">Operation Shadow Council</div>
+        <h1>Server Specification<br>for 150 Concurrent Users</h1>
+        <p class="hero-sub">AWS infrastructure sizing, cost estimation, and scaling strategy for the multi-tenant CRM
+          serving SWG, XSYS, and GRC. Deployed in ap-southeast-1 (Singapore).</p>
+      </section>
+
+      <!-- ASSUMPTIONS -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">📊</span> Sizing Assumptions</h2>
+        </div>
+        <div class="assumptions">
+          <div class="a-card">
+            <div class="av">150</div>
+            <div class="al">Concurrent Users</div>
+          </div>
+          <div class="a-card">
+            <div class="av">~300</div>
+            <div class="al">Total Registered Users</div>
+          </div>
+          <div class="a-card">
+            <div class="av">~50</div>
+            <div class="al">Req/sec at Peak</div>
+          </div>
+          <div class="a-card">
+            <div class="av">3</div>
+            <div class="al">Tenant Companies</div>
+          </div>
+          <div class="a-card">
+            <div class="av">18</div>
+            <div class="al">Principal Lines</div>
+          </div>
+          <div class="a-card">
+            <div class="av">~200ms</div>
+            <div class="al">Target Response Time</div>
+          </div>
+          <div class="a-card">
+            <div class="av">99.9%</div>
+            <div class="al">Uptime SLA</div>
+          </div>
+          <div class="a-card">
+            <div class="av">ap-southeast-1</div>
+            <div class="al">AWS Region (SG)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ARCHITECTURE DIAGRAM (RECOMMENDED) -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">🏗️</span> Recommended Architecture</h2>
+          <p>High-availability setup with 2 app instances behind a load balancer. All prices ap-southeast-1 region.</p>
+        </div>
+        <div class="arch-diagram">
+          <div class="arch-inner">
+            <div class="arch-label">Internet</div>
+            <div class="arch-row">
+              <div class="arch-box" style="--ab-c:var(--ylw)"><span class="ab-i">🌐</span><span
+                  class="ab-n">Users</span><span class="ab-d">150 concurrent</span><span class="ab-spec">3 companies ×
+                  ~50 avg</span></div>
+            </div>
+            <div class="arch-label">↓</div>
+            <div class="arch-row">
+              <div class="arch-box hl" style="--ab-c:var(--blu)"><span class="ab-i">☁️</span><span
+                  class="ab-n">CloudFlare</span><span class="ab-d">CDN + WAF + DDoS</span><span class="ab-spec">Free /
+                  Pro $20/mo</span></div>
+            </div>
+            <div class="arch-label">↓</div>
+            <div class="arch-row">
+              <div class="arch-box hl" style="--ab-c:var(--ora)"><span class="ab-i">⚖️</span><span
+                  class="ab-n">ALB</span><span class="ab-d">Application Load Balancer</span><span
+                  class="ab-spec">~$22/mo + LCU</span></div>
+            </div>
+            <div class="arch-label">↓ distributes to</div>
+            <div class="arch-row">
+              <div class="arch-box hl" style="--ab-c:var(--grn)"><span class="ab-i">💎</span><span class="ab-n">Rails
+                  App #1</span><span class="ab-d">Docker / Kamal</span><span class="ab-spec">t3.medium · 2 vCPU · 4
+                  GB</span></div>
+              <div class="arch-box hl" style="--ab-c:var(--grn)"><span class="ab-i">💎</span><span class="ab-n">Rails
+                  App #2</span><span class="ab-d">Docker / Kamal</span><span class="ab-spec">t3.medium · 2 vCPU · 4
+                  GB</span></div>
+            </div>
+            <div class="arch-label">↓ connected to</div>
+            <div class="arch-row">
+              <div class="arch-box hl" style="--ab-c:var(--vio)"><span class="ab-i">🗄️</span><span
+                  class="ab-n">PostgreSQL</span><span class="ab-d">RDS Multi-AZ</span><span class="ab-spec">db.t3.medium
+                  · 2 vCPU · 4 GB</span></div>
+              <div class="arch-box hl" style="--ab-c:var(--red)"><span class="ab-i">⚡</span><span
+                  class="ab-n">Redis</span><span class="ab-d">ElastiCache</span><span class="ab-spec">cache.t3.small ·
+                  1.37 GB</span></div>
+              <div class="arch-box" style="--ab-c:var(--ora)"><span class="ab-i">📁</span><span
+                  class="ab-n">S3</span><span class="ab-d">File Storage</span><span class="ab-spec">~10 GB logos,
+                  PDFs</span></div>
+            </div>
+            <div class="arch-label">monitoring</div>
+            <div class="arch-row">
+              <div class="arch-box" style="--ab-c:var(--ylw)"><span class="ab-i">📊</span><span
+                  class="ab-n">CloudWatch</span><span class="ab-d">Logs + Alarms</span></div>
+              <div class="arch-box" style="--ab-c:var(--blu)"><span class="ab-i">📧</span><span
+                  class="ab-n">SES</span><span class="ab-d">Email</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FULL SPEC TABLE -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">📋</span> Detailed Server Specifications</h2>
+          <p>Two tiers: Starter (cost-optimized, single instance) and Recommended (HA, production-ready).</p>
+        </div>
+        <div class="spec-w">
+          <table class="spec">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Spec</th>
+                <th class="tier-h"><span class="tier-start">STARTER</span><br>Cost-Optimized</th>
+                <th class="tier-h"><span class="tier-rec">RECOMMENDED</span><br>Production HA</th>
+                <th class="tier-h"><span class="tier-scale">SCALE-UP</span><br>300+ Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- COMPUTE -->
+              <tr class="cat-row">
+                <td colspan="5">🖥️ Compute — Application Server</td>
+              </tr>
+              <tr>
+                <td>Instance Type</td>
+                <td>EC2 On-Demand</td>
+                <td>t3.medium × 1</td>
+                <td class="rec">t3.medium × 2</td>
+                <td>t3.large × 2 or m6g.large × 2</td>
+              </tr>
+              <tr>
+                <td>vCPU</td>
+                <td>Application threads</td>
+                <td>2 vCPU</td>
+                <td class="rec">4 vCPU total</td>
+                <td>4–8 vCPU total</td>
+              </tr>
+              <tr>
+                <td>RAM</td>
+                <td>App + Puma workers</td>
+                <td>4 GB</td>
+                <td class="rec">8 GB total</td>
+                <td>16 GB total</td>
+              </tr>
+              <tr>
+                <td>Puma Workers</td>
+                <td>Per instance</td>
+                <td>2 workers × 5 threads</td>
+                <td class="rec">2 workers × 5 threads each</td>
+                <td>3 workers × 5 threads each</td>
+              </tr>
+              <tr>
+                <td>Concurrency</td>
+                <td>Requests handled</td>
+                <td>10 concurrent req</td>
+                <td class="rec">20 concurrent req</td>
+                <td>30 concurrent req</td>
+              </tr>
+              <tr>
+                <td>Storage</td>
+                <td>EBS gp3</td>
+                <td>20 GB</td>
+                <td class="rec">30 GB × 2</td>
+                <td>30 GB × 2</td>
+              </tr>
+              <tr>
+                <td>Deploy</td>
+                <td>Tool</td>
+                <td>Kamal (Docker)</td>
+                <td class="rec">Kamal (Docker) + ALB</td>
+                <td>Kamal + ALB + Auto Scaling</td>
+              </tr>
+              <tr>
+                <td>Cost / month</td>
+                <td>ap-southeast-1</td>
+                <td>~$30</td>
+                <td class="rec">~$60</td>
+                <td>~$120–150</td>
+              </tr>
+
+              <!-- DATABASE -->
+              <tr class="cat-row">
+                <td colspan="5">🗄️ Database — PostgreSQL</td>
+              </tr>
+              <tr>
+                <td>Instance Type</td>
+                <td>RDS PostgreSQL 16</td>
+                <td>db.t3.small (single-AZ)</td>
+                <td class="rec">db.t3.medium (Multi-AZ)</td>
+                <td>db.r6g.large (Multi-AZ)</td>
+              </tr>
+              <tr>
+                <td>vCPU</td>
+                <td>DB queries</td>
+                <td>2 vCPU (burstable)</td>
+                <td class="rec">2 vCPU (burstable)</td>
+                <td>2 vCPU (dedicated)</td>
+              </tr>
+              <tr>
+                <td>RAM</td>
+                <td>Connection pool + cache</td>
+                <td>2 GB</td>
+                <td class="rec">4 GB</td>
+                <td>16 GB</td>
+              </tr>
+              <tr>
+                <td>Storage</td>
+                <td>gp3</td>
+                <td>20 GB (3000 IOPS free)</td>
+                <td class="rec">50 GB (3000 IOPS free)</td>
+                <td>100 GB (3000 IOPS)</td>
+              </tr>
+              <tr>
+                <td>Max Connections</td>
+                <td>db.t3.medium</td>
+                <td>~90</td>
+                <td class="rec">~180</td>
+                <td>~650+</td>
+              </tr>
+              <tr>
+                <td>Backup</td>
+                <td>Automated</td>
+                <td>7-day retention</td>
+                <td class="rec">14-day retention</td>
+                <td>30-day retention</td>
+              </tr>
+              <tr>
+                <td>Multi-AZ</td>
+                <td>Failover</td>
+                <td>✕ No (single AZ)</td>
+                <td class="rec">✓ Yes (standby replica)</td>
+                <td>✓ Yes + Read Replica</td>
+              </tr>
+              <tr>
+                <td>Cost / month</td>
+                <td>ap-southeast-1</td>
+                <td>~$26</td>
+                <td class="rec">~$88</td>
+                <td>~$330</td>
+              </tr>
+
+              <!-- CACHE -->
+              <tr class="cat-row">
+                <td colspan="5">⚡ Cache / Session — Redis</td>
+              </tr>
+              <tr>
+                <td>Instance Type</td>
+                <td>ElastiCache Redis</td>
+                <td>cache.t3.micro</td>
+                <td class="rec">cache.t3.small</td>
+                <td>cache.r6g.large</td>
+              </tr>
+              <tr>
+                <td>RAM</td>
+                <td>Session + fragment cache</td>
+                <td>0.5 GB</td>
+                <td class="rec">1.37 GB</td>
+                <td>13.07 GB</td>
+              </tr>
+              <tr>
+                <td>Purpose</td>
+                <td></td>
+                <td>Sessions + basic cache</td>
+                <td class="rec">Sessions + dashboard cache + Sidekiq</td>
+                <td>Sessions + cache + Sidekiq + PubSub</td>
+              </tr>
+              <tr>
+                <td>Cost / month</td>
+                <td>ap-southeast-1</td>
+                <td>~$12</td>
+                <td class="rec">~$25</td>
+                <td>~$165</td>
+              </tr>
+
+              <!-- LOAD BALANCER -->
+              <tr class="cat-row">
+                <td colspan="5">⚖️ Load Balancer + Network</td>
+              </tr>
+              <tr>
+                <td>Load Balancer</td>
+                <td></td>
+                <td>None (single instance)</td>
+                <td class="rec">ALB (Application LB)</td>
+                <td>ALB + Auto Scaling Group</td>
+              </tr>
+              <tr>
+                <td>SSL</td>
+                <td>ACM</td>
+                <td>Let's Encrypt (on EC2)</td>
+                <td class="rec">ACM (free with ALB)</td>
+                <td>ACM</td>
+              </tr>
+              <tr>
+                <td>CDN / WAF</td>
+                <td></td>
+                <td>CloudFlare Free</td>
+                <td class="rec">CloudFlare Pro ($20)</td>
+                <td>CloudFlare Business ($200)</td>
+              </tr>
+              <tr>
+                <td>Cost / month</td>
+                <td>ALB + CF</td>
+                <td>$0</td>
+                <td class="rec">~$42</td>
+                <td>~$222</td>
+              </tr>
+
+              <!-- STORAGE -->
+              <tr class="cat-row">
+                <td colspan="5">📁 Object Storage + Email</td>
+              </tr>
+              <tr>
+                <td>S3</td>
+                <td>Logos, PDFs, uploads</td>
+                <td>~5 GB</td>
+                <td class="rec">~10 GB</td>
+                <td>~50 GB</td>
+              </tr>
+              <tr>
+                <td>SES</td>
+                <td>Notifications</td>
+                <td>~1000 emails/mo</td>
+                <td class="rec">~5000 emails/mo</td>
+                <td>~20,000 emails/mo</td>
+              </tr>
+              <tr>
+                <td>CloudWatch</td>
+                <td>Logs + alarms</td>
+                <td>Basic (free tier)</td>
+                <td class="rec">Detailed metrics + alarms</td>
+                <td>Detailed + custom dashboards</td>
+              </tr>
+              <tr>
+                <td>Cost / month</td>
+                <td>S3 + SES + CW</td>
+                <td>~$3</td>
+                <td class="rec">~$8</td>
+                <td>~$25</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COST BREAKDOWN -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">💰</span> Monthly Cost Estimation</h2>
+          <p>On-demand pricing in ap-southeast-1 (Singapore). Reserved Instances can save 30–60%.</p>
+        </div>
+        <div class="cost-grid">
+
+          <!-- STARTER -->
+          <div class="cost-card">
+            <div class="cc-h">
+              <h3><span class="tier-start">STARTER</span> Single Instance</h3>
+            </div>
+            <div class="cc-b">
+              <div class="cost-row"><span class="cl">EC2 t3.medium × 1</span><span class="cv">$30</span></div>
+              <div class="cost-row"><span class="cl">RDS db.t3.small (single-AZ)</span><span class="cv">$26</span></div>
+              <div class="cost-row"><span class="cl">ElastiCache cache.t3.micro</span><span class="cv">$12</span></div>
+              <div class="cost-row"><span class="cl">S3 + SES + CloudWatch</span><span class="cv">$3</span></div>
+              <div class="cost-row"><span class="cl">CloudFlare Free</span><span class="cv">$0</span></div>
+              <div class="cost-row"><span class="cl">EBS storage (20 GB)</span><span class="cv">$2</span></div>
+            </div>
+            <div class="cost-total"><span class="cl">Total / month</span><span class="cv ora">~$73/mo</span></div>
+          </div>
+
+          <!-- RECOMMENDED -->
+          <div class="cost-card" style="border-color:var(--grn-b)">
+            <div class="cc-h" style="background:var(--grn-g)">
+              <h3><span class="tier-rec">RECOMMENDED</span> HA Production</h3>
+            </div>
+            <div class="cc-b">
+              <div class="cost-row"><span class="cl">EC2 t3.medium × 2</span><span class="cv">$60</span></div>
+              <div class="cost-row"><span class="cl">RDS db.t3.medium (Multi-AZ)</span><span class="cv">$88</span></div>
+              <div class="cost-row"><span class="cl">ElastiCache cache.t3.small</span><span class="cv">$25</span></div>
+              <div class="cost-row"><span class="cl">ALB (Application LB)</span><span class="cv">$22</span></div>
+              <div class="cost-row"><span class="cl">CloudFlare Pro</span><span class="cv">$20</span></div>
+              <div class="cost-row"><span class="cl">S3 + SES + CloudWatch</span><span class="cv">$8</span></div>
+              <div class="cost-row"><span class="cl">EBS storage (30 GB × 2)</span><span class="cv">$5</span></div>
+            </div>
+            <div class="cost-total"><span class="cl">Total / month</span><span class="cv grn">~$228/mo</span></div>
+          </div>
+
+        </div>
+
+        <div class="cards" style="margin-bottom:8px">
+          <div class="card">
+            <div class="c-h"><span class="c-i">💡</span><span class="c-t">Cost Optimization Tips</span></div>
+            <div class="c-b">
+              <strong>Reserved Instances (1-yr):</strong> saves ~30-40% on EC2 and RDS → Recommended tier drops to
+              ~$155/mo.<br><br>
+              <strong>Savings Plans (3-yr):</strong> saves ~50-60% → could reach ~$115/mo.<br><br>
+              <strong>Graviton (ARM):</strong> t4g.medium + db.t4g.medium are ~20% cheaper with better perf. Rails +
+              PostgreSQL both run natively on ARM.<br><br>
+              <strong>Spot for Sidekiq:</strong> Background job workers can use Spot Instances (60-90% cheaper) since
+              they can tolerate interruption.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🔢</span><span class="c-t">Why These Numbers</span></div>
+            <div class="c-b">
+              <strong>150 concurrent users ≠ 150 requests/sec.</strong> Most users spend 10-30 sec reading before
+              clicking. Actual peak: ~50 req/sec.<br><br>
+              <strong>Puma with 2 workers × 5 threads = 10 concurrent requests per instance.</strong> With 2 instances
+              behind ALB = 20 concurrent requests. At ~200ms avg response time, each thread handles ~5 req/sec = 100
+              req/sec total capacity. Headroom: 2× the expected peak.<br><br>
+              <strong>DB connections:</strong> db.t3.medium supports ~180 connections. With 2 app instances × pool of 10
+              = 20 connections used. Plenty of headroom.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RAILS SPECIFIC TUNING -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">💎</span> Rails Application Tuning</h2>
+          <p>Configuration optimized for 150 concurrent users with multi-tenant scoping.</p>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <div class="c-h"><span class="c-i">🦁</span><span class="c-t">Puma Configuration</span></div>
+            <div class="c-b">
+              <code>workers 2</code> (matches vCPU count)<br>
+              <code>threads 5, 5</code> (min/max threads per worker)<br>
+              <code>preload_app!</code> (faster boot, copy-on-write memory)<br>
+              <code>worker_timeout 30</code><br><br>
+              Total: 10 concurrent requests per instance. Across 2 instances = 20 concurrent connections. Each handles
+              ~5 req/sec = <strong>100 req/sec max capacity</strong>.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🗄️</span><span class="c-t">Database Pool</span></div>
+            <div class="c-b">
+              <code>pool: 10</code> (in database.yml per instance)<br>
+              <code>prepared_statements: true</code><br>
+              <code>advisory_locks: true</code><br><br>
+              2 instances × pool 10 = 20 DB connections used.<br>
+              db.t3.medium supports ~180. <strong>Headroom: 9×</strong>.<br><br>
+              Add PgBouncer if scaling to 300+ users.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">⚡</span><span class="c-t">Cache Strategy</span></div>
+            <div class="c-b">
+              <strong>Fragment cache:</strong> dashboard KPI cards cached per <code>company:principal:view_mode</code>.
+              TTL: 5 min.<br><br>
+              <strong>Russian doll caching:</strong> for principal tabs, product catalog, vendor matrix. Cache busted on
+              data write.<br><br>
+              <strong>Counter cache:</strong> for leads_count, opps_count on companies/principals. Avoids COUNT(*)
+              queries on every dashboard load.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🔍</span><span class="c-t">Database Indexes</span></div>
+            <div class="c-b">
+              Critical compound indexes:<br>
+              <code>[company_id, principal_id]</code> on leads, opps, deals<br>
+              <code>[company_id, principal_id, status]</code> on deal_registrations<br>
+              <code>[company_id, product_id]</code> UNIQUE on company_products<br>
+              <code>[principal_id, account_id, status]</code> on deal_registrations (conflict check)<br><br>
+              These make dual-scope queries O(log n) instead of full table scans.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🔄</span><span class="c-t">Sidekiq (Background Jobs)</span></div>
+            <div class="c-b">
+              Runs on the same EC2 instances (for Starter) or a separate <code>t3.small</code> (for
+              Recommended).<br><br>
+              <code>concurrency: 5</code><br><br>
+              Jobs: email notifications, PDF generation, deal expiration checker (cron), dashboard cache warming, audit
+              log writing.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">📊</span><span class="c-t">Monitoring Alerts</span></div>
+            <div class="c-b">
+              <strong>CPU > 70%</strong> for 5 min → alarm (consider scaling)<br>
+              <strong>DB connections > 80%</strong> → alarm<br>
+              <strong>Response time > 500ms</strong> p95 → alarm<br>
+              <strong>Memory > 85%</strong> → alarm<br>
+              <strong>Error rate > 1%</strong> → alarm<br>
+              <strong>Redis memory > 80%</strong> → alarm
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCALING STRATEGY -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">📈</span> Scaling Strategy</h2>
+          <p>When 150 users grows to 300, 500, or beyond. Each step is independent.</p>
+        </div>
+        <div class="scale-note">
+          <h3>Growth Ladder</h3>
+          <div class="scale-steps">
+            <div class="scale-step"><span class="ss-n">1</span><strong>0–100 users:</strong> Single t3.medium +
+              db.t3.small. ~$73/mo. Good enough for MVP and initial launch. No ALB needed — direct EC2.</div>
+            <div class="scale-step"><span class="ss-n">2</span><strong>100–200 users:</strong> Add second EC2 behind ALB
+              + upgrade to db.t3.medium Multi-AZ. ~$228/mo. This is the recommended tier for 150 concurrent. Zero
+              downtime deploys via Kamal rolling restart.</div>
+            <div class="scale-step"><span class="ss-n">3</span><strong>200–500 users:</strong> Scale EC2 to t3.large × 2
+              (or 3 × t3.medium). Upgrade Redis to cache.t3.medium. Add PgBouncer for connection pooling. Consider read
+              replica for heavy dashboard queries. ~$400-500/mo.</div>
+            <div class="scale-step"><span class="ss-n">4</span><strong>500–1000 users:</strong> Move to m6g.large
+              (Graviton) × 3-4 with Auto Scaling Group. Upgrade DB to db.r6g.large with read replica. CDN for static
+              assets. ~$800-1200/mo.</div>
+            <div class="scale-step"><span class="ss-n">5</span><strong>1000+ users:</strong> Consider Aurora PostgreSQL
+              for auto-scaling storage. Separate Sidekiq worker fleet on Spot Instances. ElasticSearch for full-text
+              search. Redis Cluster. ~$2000+/mo.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECURITY NOTE -->
+      <section class="sec rv">
+        <div class="sh">
+          <h2><span class="ico">🔒</span> Infrastructure Security</h2>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <div class="c-h"><span class="c-i">🌐</span><span class="c-t">Network Isolation</span></div>
+            <div class="c-b">VPC with public + private subnets across 2 AZs. EC2 in <strong>private subnets</strong> —
+              no direct internet access. ALB in public subnet. RDS + Redis in private subnet only. Security Groups:
+              ALB→EC2 on port 3000, EC2→RDS on 5432, EC2→Redis on 6379. No SSH from internet — use SSM Session Manager.
+            </div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🔐</span><span class="c-t">Data Encryption</span></div>
+            <div class="c-b"><strong>At rest:</strong> RDS encryption enabled (AES-256). EBS encrypted. S3 default
+              encryption (SSE-S3).<br><strong>In transit:</strong> ALB terminates TLS 1.2+ (ACM cert). RDS connections
+              via SSL. Redis TLS enabled.<br><strong>Secrets:</strong> Rails credentials encrypted. DB passwords in AWS
+              Secrets Manager or SSM Parameter Store.</div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">🛡️</span><span class="c-t">Access Control</span></div>
+            <div class="c-b"><strong>IAM:</strong> Principle of least privilege. EC2 instance role only needs S3
+              read/write, SES send, CloudWatch write. No admin keys on instances.<br><strong>RDS:</strong> Password auth
+              + IAM auth option. Separate DB users for app vs migration vs readonly.<br><strong>SSH:</strong> Disabled.
+              Use AWS SSM Session Manager for emergency shell access (logged + auditable).</div>
+          </div>
+          <div class="card">
+            <div class="c-h"><span class="c-i">💾</span><span class="c-t">Backup & DR</span></div>
+            <div class="c-b"><strong>RDS:</strong> Daily automated snapshots, 14-day retention. Point-in-time recovery
+              (PITR) within 5 minutes. Multi-AZ provides automatic failover.<br><strong>S3:</strong> Cross-region
+              replication to ap-southeast-3 (Jakarta) for logos/PDFs.<br><strong>Code:</strong> Git (GitHub) is the
+              source of truth. Kamal can redeploy from scratch in ~5 min.<br><strong>RPO:</strong> 5 min.
+              <strong>RTO:</strong> ~15 min (Multi-AZ auto-failover).
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="ftr">
+        <p>Server Specification · 150 Concurrent Users</p>
+        <p style="margin-top:4px">Recommended: 2× t3.medium + db.t3.medium Multi-AZ + cache.t3.small · ~$228/mo ·
+          ap-southeast-1</p>
+      </footer>
+
+    </div>
+
+    <script>
+    </script>
+
+  </div>
+
+  <!-- SCROLL TO TOP -->
+  <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script>
+    // Tab switching
+    function switchDoc(id, btn) {
+      document.querySelectorAll('.doc-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.topnav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('sec-' + id).classList.add('active');
+      btn.classList.add('active');
+      window.scrollTo({ top: document.getElementById('cover').offsetHeight, behavior: 'smooth' });
+      // Re-trigger reveal animations
+      setTimeout(function () {
+        document.querySelectorAll('#sec-' + id + ' .rv').forEach(function (el) {
+          obsGlobal.observe(el);
+        });
+      }, 200);
+    }
+
+    // Scroll to top button
+    window.addEventListener('scroll', function () {
+      var btn = document.getElementById('scrollTopBtn');
+      if (window.scrollY > 400) btn.classList.add('show');
+      else btn.classList.remove('show');
+    });
+
+    // Reveal on scroll
+    var obsGlobal = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.rv').forEach(function (el) { obsGlobal.observe(el); });
+
+    // Architecture
+
+    // Company tab switch
+    function switchCo(el, co) {
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('on'));
+      el.classList.add('on');
+      document.querySelectorAll('.d-panel').forEach(p => p.classList.remove('on'));
+      document.getElementById('dp-' + co).classList.add('on');
+    }
+    // Principal sub-tab switch
+    function switchPr(el, co, pr) {
+      const panel = document.getElementById('dp-' + co);
+      panel.querySelectorAll('.pr-tab').forEach(t => t.classList.remove('on'));
+      el.classList.add('on');
+      panel.querySelectorAll('.pr-content').forEach(c => c.style.display = 'none');
+      document.getElementById(co + '-' + pr).style.display = 'block';
+    }
+
+    // ERD
+
+    function flt(b, f) {
+      document.querySelectorAll('.f-btn').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      document.querySelectorAll('.t').forEach(t => {
+        if (f === 'all') t.classList.remove('dim');
+        else if (f === 'new') t.classList.toggle('dim', t.dataset.s !== 'new');
+        else if (f === 'mod') t.classList.toggle('dim', t.dataset.s === 'v1');
+        else t.classList.toggle('dim', t.dataset.p !== f);
+      });
+    }
+  </script>
 </body>
+
 </html>
